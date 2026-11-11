@@ -11,7 +11,7 @@ function authorized(req) {
   const panelKey = String(req.headers["x-panel-key"] || "").trim();
   const agentKey = String(req.headers["x-aloha-agent-key"] || "").trim();
   const auth = String(req.headers.authorization || "");
-  const bearer = auth.match(/^Bearer\\s+(.+)$/i)?.[1] || "";
+  const bearer = auth.match(/^Bearer\s+(.+)$/i)?.[1] || "";
   return safeEqual(process.env.ALOHA_PANEL_KEY, panelKey) ||
     safeEqual(process.env.ALOHA_AGENT_API_KEY, agentKey) ||
     safeEqual(process.env.LIVEKIT_WEBHOOK_SECRET, bearer);
