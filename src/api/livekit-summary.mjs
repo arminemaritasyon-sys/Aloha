@@ -2,9 +2,10 @@ import { neon } from "@neondatabase/serverless";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 function authorized(req) {
-  const expected = process.env.LIVEKIT_WEBHOOK_SECRET || "";
-  const header = req.headers.authorization || "";
-  const supplied = header.startsWith("Bearer ") ? header.slice(7) : "";
+  const expected = (process.env.LIVEKIT_WEBHOOK_SECRET || "").trim();
+  const header = String(req.headers.authorization || "").trim();
+  const match = header.match(/^Bearer\\s+(.+)$/i);
+  const supplied = match ? match[1].trim() : "";
   if (!expected || !supplied) return false;
   const a = Buffer.from(expected);
   const b = Buffer.from(supplied);
