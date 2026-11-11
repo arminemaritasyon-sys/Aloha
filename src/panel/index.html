@@ -75,6 +75,49 @@
 .recent-open{grid-column:2;grid-row:3}
 .dash-recent-card .card-head .btn{padding:7px 9px;font-size:9px}
 }
+
+/* Calls page redesign */
+.calls-page .calls-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:17px}
+.calls-page .calls-hero h1{font-size:26px;letter-spacing:-.9px;margin:6px 0 5px;font-weight:760}
+.calls-page .calls-hero p{margin:0;color:#7b8797;font-size:11px;line-height:1.55}
+.calls-refresh{flex-shrink:0}
+.calls-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:16px}
+.calls-metric{display:flex;align-items:center;gap:12px;min-width:0;padding:15px 16px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}
+.metric-icon{width:35px;height:35px;flex:0 0 35px;display:grid;place-items:center;border-radius:10px;background:#edf1ff;color:#5368d7;font-size:16px}
+.metric-icon.audio-icon{background:#eaf8f0;color:#169b62}.metric-icon.summary-icon{background:#f3edff;color:#8256c8}.metric-icon.time-icon{background:#fff5e4;color:#b7791f}
+.calls-metric small{display:block;color:#7b8797;font-size:9px;font-weight:600;white-space:nowrap}
+.calls-metric strong{display:block;color:#172235;font-size:22px;letter-spacing:-.6px;margin-top:5px;line-height:1.1;overflow:hidden;text-overflow:ellipsis}
+.calls-toolbar{padding:16px 17px 13px;background:#fff;border:1px solid var(--line);border-radius:12px 12px 0 0}
+.calls-toolbar-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.calls-toolbar-title h2{font-size:13px;margin:0;font-weight:750;color:#202b3a}
+.calls-toolbar-title p{font-size:9px;color:#8994a4;margin:4px 0 0}
+.calls-count{font-size:9px;color:#64748b;background:#f2f5f9;border-radius:20px;padding:6px 9px;white-space:nowrap}
+.calls-filters{display:grid;grid-template-columns:minmax(220px,1fr) 175px 170px;gap:8px}
+.calls-search{display:flex;align-items:center;gap:8px;border:1px solid #dfe5ed;border-radius:8px;padding:0 10px;background:#fafbfd;color:#8994a4}
+.calls-search span{font-size:19px;line-height:1}
+.calls-search input{border:0!important;box-shadow:none!important;background:transparent!important;width:100%;padding:10px 0}
+.calls-list{display:grid;gap:0;background:#fff;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;overflow:hidden}
+.call-item{display:grid;grid-template-columns:minmax(150px,1.05fr) minmax(180px,1.6fr) 105px 100px auto;align-items:center;gap:14px;padding:14px 17px;border-top:1px solid #eef1f5;min-width:0;transition:background .15s}
+.call-item:first-child{border-top:0}.call-item:hover{background:#fafbff}
+.call-person{display:flex;align-items:center;gap:10px;min-width:0}
+.call-person-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:11px;display:grid;place-items:center;background:#eef2ff;color:#5368d5;font-size:13px;font-weight:750}
+.call-person strong{display:block;color:#263244;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-person small{display:block;color:#96a0ae;font-size:9px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-description{min-width:0;color:#596579;font-size:10px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.call-description .call-note{display:block;color:#8b6a2c;font-size:9px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-time{color:#465368;font-size:10px;white-space:nowrap}.call-time small{display:block;color:#96a0ae;font-size:9px;margin-top:4px}
+.call-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.call-tags .status{font-size:8px;padding:5px 7px}
+.call-detail-btn{border:1px solid #dfe5ef;background:#fff;color:#5265c8;border-radius:7px;padding:8px 11px;font-size:9px;font-weight:750;white-space:nowrap}
+.call-detail-btn:hover{background:#f3f5ff;border-color:#d4dcff}
+.calls-empty{padding:42px 15px;text-align:center;color:#8792a2;font-size:11px}
+@media(max-width:1050px){.calls-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.call-item{grid-template-columns:minmax(150px,1fr) minmax(160px,1.4fr) 100px auto}.call-tags{grid-column:2}.call-detail-btn{grid-column:4;grid-row:1/3}}
+@media(max-width:700px){
+.calls-page .calls-hero{align-items:flex-start}.calls-page .calls-hero h1{font-size:22px}.calls-page .calls-hero p{max-width:34ch;font-size:10px}.calls-refresh{padding:8px 10px;font-size:10px}
+.calls-metrics{gap:8px;margin-bottom:11px}.calls-metric{padding:12px 10px;gap:9px;border-radius:10px}.metric-icon{width:30px;height:30px;flex-basis:30px;font-size:14px}.calls-metric small{font-size:8px}.calls-metric strong{font-size:19px}
+.calls-toolbar{padding:13px 12px 11px}.calls-toolbar-title{margin-bottom:10px}.calls-filters{grid-template-columns:1fr 1fr;gap:7px}.calls-search{grid-column:1/-1}.calls-filters select{width:100%;font-size:9px;padding:9px 7px}
+.call-item{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;padding:12px}.call-person{grid-column:1;grid-row:1}.call-time{grid-column:2;grid-row:1;text-align:right;font-size:9px}.call-description{grid-column:1/-1;grid-row:2;padding-left:46px;font-size:10px}.call-tags{grid-column:1;grid-row:3;padding-left:46px}.call-detail-btn{grid-column:2;grid-row:3;align-self:center;padding:7px 9px}
+}
 </style></head><body><div class="app">
 <aside class="sidebar" id="sidebar"><div class="logo">aloha<span>.</span><small>ADMINISTRATION</small></div>
 <div class="nav-caption">YÖNETİM</div><nav class="nav">
@@ -103,9 +146,20 @@
 </div>
 <section class="card dash-recent-card"><div class="card-head"><div><h2>Son görüşmeler</h2><p>En son gerçekleşen telefon görüşmeleri</p></div><button class="btn subtle" data-goto="calls">Tüm görüşmeler <span aria-hidden="true">→</span></button></div><div class="recent-call-list" id="recentCalls"></div></section>
 </section>
-<section class="page" id="page-calls"><div class="page-heading"><div><div class="eyebrow">ÇAĞRI MERKEZİ</div><h1>Görüşmeler</h1><p>Telefon görüşmelerini, özetleri ve ses kayıtlarını inceleyin.</p></div><button class="btn" id="connectCalls">↻ Verileri Yenile</button></div>
-<div class="stats"><div class="stat"><div class="stat-top">Toplam Görüşme <span class="stat-icon">◉</span></div><strong id="callsTotal">—</strong><div class="stat-foot">Kayıtlı çağrı</div></div><div class="stat"><div class="stat-top">Ses Kaydı <span class="stat-icon">♫</span></div><strong id="callsAudio">—</strong><div class="stat-foot">Oynatılabilir kayıt</div></div><div class="stat"><div class="stat-top">Özet Bulunan <span class="stat-icon">≡</span></div><strong id="callsSummaries">—</strong><div class="stat-foot">AI görüşme özeti</div></div><div class="stat"><div class="stat-top">Toplam Süre <span class="stat-icon">◷</span></div><strong id="callsDuration">—</strong><div class="stat-foot">Görüşme süresi</div></div></div>
-<div class="table-card"><div class="table-toolbar"><div class="toolbar-left"><input class="input search" id="callSearch" placeholder="Telefon, görüşme ID veya özet ara…"><select class="input" id="callAudioFilter"><option value="all">Tüm görüşmeler</option><option value="audio">Ses kaydı olanlar</option><option value="noaudio">Ses kaydı olmayanlar</option></select><select class="input" id="callPriorityFilter"><option value="all">Tüm işaretler</option><option value="important">Önemli</option><option value="follow_up">Takip edilecek</option><option value="resolved">Çözüldü</option><option value="normal">Normal</option></select></div><div class="toolbar-right"><button class="btn" id="connect">↻ Yenile</button></div></div><div class="table-wrap"><table><thead><tr><th>ARAYAN</th><th>GÖRÜŞME TARİHİ</th><th>SÜRE</th><th>GÖRÜŞME ÖZETİ</th><th>SES</th><th>DETAY</th></tr></thead><tbody id="callsTable"></tbody></table></div></div></section>
+<section class="page calls-page" id="page-calls">
+<div class="calls-hero"><div><div class="eyebrow">ALOHA · ÇAĞRI MERKEZİ</div><h1>Görüşmeler</h1><p>Tüm telefon görüşmelerini, kayıtları ve takip notlarını tek ekrandan yönetin.</p></div><button class="btn calls-refresh" id="connectCalls">↻ Yenile</button></div>
+<div class="calls-metrics">
+<div class="calls-metric"><span class="metric-icon">◉</span><div><small>Toplam görüşme</small><strong id="callsTotal">—</strong></div></div>
+<div class="calls-metric"><span class="metric-icon audio-icon">♫</span><div><small>Ses kaydı</small><strong id="callsAudio">—</strong></div></div>
+<div class="calls-metric"><span class="metric-icon summary-icon">≡</span><div><small>AI özeti</small><strong id="callsSummaries">—</strong></div></div>
+<div class="calls-metric"><span class="metric-icon time-icon">◷</span><div><small>Toplam süre</small><strong id="callsDuration">—</strong></div></div>
+</div>
+<div class="calls-toolbar">
+<div class="calls-toolbar-title"><div><h2>Görüşme kayıtları</h2><p>Arayın, filtreleyin ve görüşme detaylarını açın.</p></div><span class="calls-count" id="callsCountLabel">0 kayıt</span></div>
+<div class="calls-filters"><label class="calls-search"><span>⌕</span><input class="input" id="callSearch" placeholder="Telefon, görüşme ID, özet veya not ara…"></label><select class="input" id="callAudioFilter"><option value="all">Tüm kayıtlar</option><option value="audio">Ses kaydı olanlar</option><option value="noaudio">Ses kaydı olmayanlar</option></select><select class="input" id="callPriorityFilter"><option value="all">Tüm durumlar</option><option value="important">Önemli</option><option value="follow_up">Takip edilecek</option><option value="resolved">Çözüldü</option><option value="normal">Normal</option></select></div>
+</div>
+<div class="calls-list" id="callsTable"><div class="calls-empty">Görüşmeler yükleniyor…</div></div>
+</section>
 <section class="page" id="page-orders"><div class="page-heading"><div><div class="eyebrow">OPERASYON</div><h1>Sipariş Yönetimi</h1><p>Siparişleri oluşturun, durumlarını güncelleyin ve süreçleri takip edin.</p></div><button class="btn primary" id="newOrder">＋ Sipariş Oluştur</button></div>
 <div class="stats"><div class="stat"><div class="stat-top">Tüm Siparişler <span class="stat-icon">▤</span></div><strong id="ordersTotal">—</strong><div class="stat-foot">Toplam kayıt</div></div><div class="stat"><div class="stat-top">Onay Bekliyor <span class="stat-icon">◷</span></div><strong id="ordersPending">—</strong><div class="stat-foot">Yeni siparişler</div></div><div class="stat"><div class="stat-top">Hazırlanıyor <span class="stat-icon">◌</span></div><strong id="ordersPreparing">—</strong><div class="stat-foot">Devam eden işlemler</div></div><div class="stat"><div class="stat-top">Tamamlandı <span class="stat-icon">✓</span></div><strong id="ordersDone">—</strong><div class="stat-foot">Sonuçlandırılan siparişler</div></div></div>
 <div class="table-card"><div class="table-toolbar"><div class="toolbar-left"><input class="input search" id="orderSearch" placeholder="Sipariş no, müşteri veya telefon ara…"><select class="input" id="orderStatusFilter"><option value="all">Tüm durumlar</option><option value="pending">Onay bekliyor</option><option value="confirmed">Onaylandı</option><option value="preparing">Hazırlanıyor</option><option value="completed">Tamamlandı</option><option value="cancelled">İptal</option></select></div><span class="secondary" id="orderCountLabel">0 sipariş</span></div><div class="table-wrap"><table><thead><tr><th>SİPARİŞ NO</th><th>MÜŞTERİ</th><th>ÜRÜN / HİZMET</th><th>ADET</th><th>OLUŞTURULMA</th><th>DURUM</th><th></th></tr></thead><tbody id="ordersTable"></tbody></table></div></div></section>
@@ -130,7 +184,7 @@ function go(page){if(!names[page])page="dashboard";document.querySelectorAll(".p
 document.querySelectorAll("[data-page]").forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.page)});
 document.querySelectorAll("[data-goto]").forEach(a=>a.onclick=()=>go(a.dataset.goto));
 function status(v){return '<span class="status '+({pending:"amber",confirmed:"blue",preparing:"amber",completed:"green",cancelled:"red"}[v]||"")+'">'+esc(labels[v]||v||"Belirsiz")+'</span>'}
-function renderCallRows(target,items){if(!items.length){empty(target,"Görüşme kaydı bulunamadı");return}$(target).innerHTML=items.map(c=>{const a=s.annotations[c.job_id]||{},p=a.priority||"normal",pl={important:"Önemli",follow_up:"Takip",resolved:"Çözüldü",normal:"Normal"};return '<tr><td><span class="primary-cell">'+esc(c.caller_phone||c.room_name||"Bilinmeyen arayan")+'</span><span class="secondary">'+esc(c.room_name||c.job_id||"")+'</span></td><td>'+esc(date(c.created_at||c.ended_at||c.started_at))+'</td><td>'+esc(dur(c.duration_seconds))+'</td><td style="max-width:340px;white-space:normal">'+esc(c.summary||"Özet bulunmuyor.")+'<span class="secondary">'+esc(a.note||"")+'</span><span class="secondary"><span class="status '+(p==="important"?"red":p==="follow_up"?"amber":p==="resolved"?"green":"")+'">'+pl[p]+'</span></span></td><td>'+(c.audio_url?'<span class="status green">Ses mevcut</span>':'<span class="status">Yok</span>')+'</td><td><button class="btn subtle" data-call="'+esc(c.job_id)+'">İncele</button></td></tr>'}).join("");document.querySelectorAll("[data-call]").forEach(b=>b.onclick=()=>openCall(s.calls.find(c=>c.job_id===b.dataset.call)))}
+function renderCallRows(target,items){const count=$("callsCountLabel");if(count)count.textContent=items.length+" kayıt";if(!items.length){$(target).innerHTML='<div class="calls-empty">Bu filtrelerle eşleşen görüşme bulunamadı.</div>';return}const pl={important:"Önemli",follow_up:"Takip edilecek",resolved:"Çözüldü",normal:"Normal"};$(target).innerHTML=items.map(c=>{const a=s.annotations[c.job_id]||{},p=a.priority||"normal",phone=c.caller_phone||c.room_name||"Bilinmeyen arayan",when=c.created_at||c.ended_at||c.started_at,initial=String(phone).replace(/[^0-9a-zA-ZğüşöçıİĞÜŞÖÇ]/g,"").slice(-1).toLocaleUpperCase("tr-TR")||"A";return '<article class="call-item"><div class="call-person"><span class="call-person-avatar">'+esc(initial)+'</span><div style="min-width:0"><strong>'+esc(phone)+'</strong><small>'+esc(c.room_name||c.job_id||"Telefon görüşmesi")+'</small></div></div><div class="call-description">'+esc(c.summary||"Bu görüşme için henüz özet oluşturulmamış.")+(a.note?'<span class="call-note">Not: '+esc(a.note)+'</span>':'')+'</div><div class="call-time">'+esc(dur(c.duration_seconds))+'<small>'+esc(date(when))+'</small></div><div class="call-tags"><span class="status '+(p==="important"?"red":p==="follow_up"?"amber":p==="resolved"?"green":"")+'">'+pl[p]+'</span>'+(c.audio_url||c.room_id?'<span class="status green">♫ Ses kaydı</span>':'<span class="status">Ses yok</span>')+'</div><button class="call-detail-btn" data-call="'+esc(c.job_id)+'">Detayları aç →</button></article>'}).join("");$(target).querySelectorAll("[data-call]").forEach(btn=>btn.onclick=()=>openCall(s.calls.find(c=>c.job_id===btn.dataset.call)))}
 function renderOrders(){const q=$("orderSearch")?.value.toLocaleLowerCase("tr-TR")||"",f=$("orderStatusFilter")?.value||"all";const arr=s.orders.filter(o=>(f==="all"||o.status===f)&&(!q||[o.order_number,o.customer_name,o.phone,o.product].join(" ").toLocaleLowerCase("tr-TR").includes(q)));$("ordersTable")&& ( $("ordersTable").innerHTML=arr.length?arr.map(o=>'<tr><td><span class="primary-cell">'+esc(o.order_number)+'</span></td><td><span class="primary-cell">'+esc(o.customer_name)+'</span><span class="secondary">'+esc(o.phone||"Telefon yok")+'</span></td><td>'+esc(o.product)+'</td><td>'+esc(o.quantity)+'</td><td>'+esc(date(o.created_at))+'</td><td><select class="input" data-status="'+esc(o.id)+'">'+Object.entries(labels).map(([k,v])=>'<option value="'+k+'" '+(o.status===k?"selected":"")+'>'+v+'</option>').join("")+'</select></td><td><button class="row-action" data-order-detail="'+esc(o.id)+'">···</button></td></tr>').join(""):'<tr><td colspan="7"><div class="empty"><strong>Sipariş bulunamadı</strong><p>Filtreleri değiştirebilir veya yeni sipariş oluşturabilirsiniz.</p></div></td></tr>');$("orderCountLabel")&&($("orderCountLabel").textContent=arr.length+" sipariş");$("navOrders").textContent=s.orders.length;
 document.querySelectorAll("[data-status]").forEach(el=>el.onchange=async()=>{try{await api("/api/orders",{method:"PATCH",body:JSON.stringify({id:el.dataset.status,status:el.value})});await loadOrders();toast("Sipariş durumu güncellendi.")}catch(e){toast(e.message)}});
 document.querySelectorAll("[data-order-detail]").forEach(el=>el.onclick=()=>openOrder(s.orders.find(o=>o.id===el.dataset.orderDetail)))}
