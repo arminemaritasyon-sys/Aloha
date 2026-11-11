@@ -66,7 +66,16 @@ function normalize(body) {
   return {
     jobId: String(stableId),
     roomId: first(root.room_id, root.roomId, data.room_id, data.roomId, call.room_id, room.id, metadata.room_id),
-    roomName: first(root.room_name, root.roomName, data.room_name, data.roomName, call.room_name, room.name, metadata.room_name),
+    roomName: first(
+      root.room_name,
+      root.roomName,
+      typeof root.room === "string" ? root.room : null,
+      data.room_name,
+      data.roomName,
+      call.room_name,
+      room.name,
+      metadata.room_name
+    ),
     startedAt,
     endedAt,
     durationSeconds: Number.isFinite(numericDuration) && numericDuration >= 0 ? Math.round(numericDuration) : null,
@@ -84,14 +93,38 @@ export default async function handler(req, res) {
     res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
+
+  console.info("aloha_webhook_received", {
+    authorizationHeaderPresent: Boolean(req.headers.authorization),
+    contentType: req.headers["content-type"] || null,
+    bodyType: typeof req.body
+  });
+
   if (!authorized(req)) {
+    console.warn("aloha_webhook_unauthorized", {
+      authorizationHeaderPresent: Boolean(req.headers.authorization),
+      secretConfigured: Boolean(process.env.LIVEKIT_WEBHOOK_SECRET)
+    });
     return res.status(401).json({ ok: false, error: "unauthorized" });
   }
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     if (!body || typeof body !== "object" || Array.isArray(body)) {
+      console.warn("aloha_webhook_invalid_payload", { bodyType: typeof body });
       return res.status(400).json({ ok: false, error: "invalid_payload" });
+    }
+
+    console.info("aloha_webhook_payload_parsed", {
+      keys: Object.keys(body),
+      roomType: typeof body.room,
+      hasJobId: Boolean(body.job_id || body.jobId),
+      hasSummary: Boolean(body.summary || body.call_summary),
+      hasResults: Boolean(body.results)
+    });
+
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL is not configured");
     }
 
     const call = normalize(body);
@@ -132,9 +165,14 @@ export default async function handler(req, res) {
         raw_payload = EXCLUDED.raw_payload
     `;
 
+    console.info("aloha_webhook_saved", { jobId: call.jobId, roomNamePresent: Boolean(call.roomName) });
     return res.status(200).json({ ok: true, saved: true, job_id: call.jobId });
   } catch (error) {
-    console.error("aloha_summary_save_error", error);
+    console.error("aloha_summary_save_error", {
+      name: error?.name || "Error",
+      message: error?.message || String(error),
+      code: error?.code || null
+    });
     return res.status(500).json({ ok: false, error: "summary_save_failed" });
   }
 }
