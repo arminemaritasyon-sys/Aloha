@@ -49,8 +49,8 @@ export default async function handler(req, res) {
       const product = findValue(raw, ["product","product_name","productName","item_name","itemName"]);
       const quantity = findValue(raw, ["quantity","qty","amount"]);
       const address = findValue(raw, ["delivery_address","deliveryAddress","address"]);
-      const roomPhone = String(call.room_name || "").match(/\\+?\\d[\\d\\s().-]{8,}\\d/);
-      return {...call, audio_url: audio ? safeHttpUrl(audio) : null, transcript, caller_phone: phone || (roomPhone ? roomPhone[0].replace(/[\\s().-]/g, "") : null), customer_name: customer, intent, sentiment, product, quantity, address};
+      const roomPhone = String(call.room_name || "").match(/\+?\d[\d\s().-]{8,}\d/);
+      return {...call, audio_url: audio ? safeHttpUrl(audio) : null, transcript, caller_phone: phone || (roomPhone ? roomPhone[0].replace(/[\s().-]/g, "") : null), customer_name: customer, intent, sentiment, product, quantity, address};
     });
     return res.status(200).json({ok:true,calls:enriched});
   } catch (error) {
