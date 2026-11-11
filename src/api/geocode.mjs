@@ -4,7 +4,7 @@ function safeEqual(expected, supplied) {
   const a = Buffer.from(String(expected)), b = Buffer.from(String(supplied));
   return a.length === b.length && timingSafeEqual(a, b);
 }
-function authorized(req) { return safeEqual(process.env.ALOHA_PANEL_KEY, req.headers["x-panel-key"]) || safeEqual(process.env.ALOHA_AGENT_API_KEY, req.headers["x-aloha-agent-key"]); }
+function authorized(req) { const h=String(req.headers.authorization||""); const bearer=h.match(/^Bearer\\s+(.+)$/i)?.[1]||""; return safeEqual(process.env.ALOHA_PANEL_KEY, req.headers["x-panel-key"]) || safeEqual(process.env.ALOHA_AGENT_API_KEY, req.headers["x-aloha-agent-key"]) || safeEqual(process.env.LIVEKIT_WEBHOOK_SECRET,bearer); }
 const clean = (v, max = 300) => String(v ?? "").trim().replace(/\\s+/g, " ").slice(0, max);
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "private, no-store");
