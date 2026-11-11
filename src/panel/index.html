@@ -43,7 +43,9 @@
 <script>
 (()=>{
 const $=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const savedKey=localStorage.getItem("aloha_panel_key")||sessionStorage.getItem("aloha_panel_key")||"";\nif(savedKey)localStorage.setItem("aloha_panel_key",savedKey);\nconst s={key:savedKey,calls:[],orders:[]};
+const savedKey=localStorage.getItem("aloha_panel_key")||sessionStorage.getItem("aloha_panel_key")||"";
+if(savedKey)localStorage.setItem("aloha_panel_key",savedKey);
+const s={key:savedKey,calls:[],orders:[]};
 const names={dashboard:"Genel Bakış",calls:"Görüşmeler",orders:"Siparişler",customers:"Müşteriler",reports:"Raporlar",settings:"Ayarlar"};
 const labels={pending:"Onay bekliyor",confirmed:"Onaylandı",preparing:"Hazırlanıyor",completed:"Tamamlandı",cancelled:"İptal"};
 const date=v=>v?new Date(v).toLocaleString("tr-TR"):"—",sec=v=>Math.max(0,Number(v)||0),dur=v=>{v=sec(v);return v>=3600?Math.floor(v/3600)+" sa "+Math.floor(v%3600/60)+" dk":v>=60?Math.floor(v/60)+" dk "+v%60+" sn":v+" sn"};
