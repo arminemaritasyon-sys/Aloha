@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f7f7f5">
+<meta name="description" content="Bir arama yeter. Aloha, ihtiyacını anlar ve senin için en uygun hizmeti organize eder.">
+<title>Aloha — Bir arama yeter.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f7f7f5;--ink:#171917;--muted:#777d76;--line:#e5e7e2;--sage:#788d7c;--deep:#27342c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","DM Sans",sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}.shell{width:min(1160px,calc(100% - 72px));margin:auto}
+header{height:76px;position:sticky;top:0;z-index:20;background:#f7f7f5e8;backdrop-filter:blur(20px) saturate(160%);border-bottom:1px solid #1719170a}
+nav{height:100%;display:flex;align-items:center;justify-content:space-between}.logo{font-size:25px;font-weight:700;letter-spacing:-1.8px}.logo span{color:var(--sage)}.navlinks{display:flex;align-items:center;gap:38px;font-size:13px;color:#555c55}.navlinks a,.nav-cta{transition:color .2s}.navlinks a:hover,.nav-cta:hover{color:var(--sage)}.nav-cta{font-size:13px;font-weight:600;color:var(--deep)}.menu{display:none;background:none;border:0;padding:9px;color:var(--ink)}
+.hero{min-height:calc(100svh - 76px);max-height:940px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:4vw;padding:60px 0 82px;position:relative}
+.hero-copy{position:relative;z-index:2;padding-bottom:10px}.eyebrow{font-size:11px;letter-spacing:.22em;font-weight:600;color:var(--sage);margin-bottom:27px}.hero h1{font-size:clamp(66px,8.2vw,112px);line-height:.91;letter-spacing:-.092em;font-weight:600;margin:0;max-width:650px}.hero h1 span{color:#879989}.hero-copy>p{font-size:18px;line-height:1.55;letter-spacing:-.025em;color:var(--muted);max-width:390px;margin:27px 0 0}.hero-actions{display:flex;align-items:center;gap:24px;margin-top:34px}.button{height:48px;padding:0 23px;border-radius:30px;background:var(--deep);color:white;display:inline-flex;align-items:center;gap:14px;font-size:13px;font-weight:600;transition:transform .2s,background .2s}.button:hover{transform:translateY(-2px);background:#3d5143}.button svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7}.text-link{font-size:13px;color:#626b62}.text-link span{font-size:17px;margin-left:7px;color:var(--sage)}
+.visual{height:min(590px,65vw);min-height:390px;position:relative;display:grid;place-items:center;isolation:isolate}.aura{position:absolute;width:min(39vw,500px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 36% 30%,#ffffff 0 8%,#e5ebe4 24%,#cbd8ca 43%,#a8bba9 57%,#dfe6dc 69%,#f7f7f5 78%);filter:blur(.2px);box-shadow:inset -24px -28px 55px #758b7930,0 35px 90px #788d7c20;animation:breathe 8s ease-in-out infinite}
+.aura:before,.aura:after{content:"";position:absolute;inset:-7%;border:1px solid #91a49455;border-radius:50%;transform:rotate(-24deg) scaleY(.72);animation:orbit 22s linear infinite}
+.aura:after{inset:-14%;border-color:#91a49430;transform:rotate(42deg) scaleY(.78);animation-duration:30s;animation-direction:reverse}
+.ring{position:absolute;width:min(47vw,590px);aspect-ratio:1;border:1px solid #9aab9b40;border-radius:50%;transform:scaleY(.45) rotate(-24deg);animation:ring 9s ease-in-out infinite}
+.ring.two{width:min(53vw,660px);transform:scaleY(.39) rotate(24deg);border-color:#9aab9b28;animation-delay:-3s}
+.core{position:absolute;width:12px;height:12px;border-radius:50%;background:#f9fbf7;box-shadow:0 0 32px 15px #fafff4aa,0 0 100px 42px #9bb09a55}
+.visual-label{position:absolute;bottom:8%;right:3%;font-size:10px;letter-spacing:.18em;color:#929b91}
+@keyframes breathe{0%,100%{transform:scale(.97);filter:saturate(.92)}50%{transform:scale(1.025);filter:saturate(1.08)}}
+@keyframes orbit{to{transform:rotate(336deg) scaleY(.72)}}@keyframes ring{0%,100%{opacity:.45;scale:.97}50%{opacity:.9;scale:1.03}}
+.hero-foot{position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;color:#92988f;font-size:11px;letter-spacing:.04em}.scroll{display:flex;align-items:center;gap:10px}.scroll i{display:block;width:27px;height:1px;background:#aeb8ad}
+.intro{padding:116px 0 120px;border-top:1px solid var(--line);display:grid;grid-template-columns:.8fr 1.2fr;gap:9vw;align-items:start}.section-tag{font-size:11px;letter-spacing:.17em;color:var(--sage);font-weight:600}.intro h2{font-size:clamp(38px,5.1vw,66px);line-height:1.02;letter-spacing:-.075em;font-weight:600;margin:22px 0 0}.intro-copy{padding-top:34px}.intro-copy p{font-size:clamp(18px,2vw,24px);line-height:1.55;letter-spacing:-.035em;color:#626b62;margin:0;max-width:610px}.intro-copy p strong{color:var(--ink);font-weight:600}
+.services{padding:80px 0 105px;background:#eef1ec}.services-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:35px}.services h2{font-size:clamp(38px,5vw,60px);line-height:1;letter-spacing:-.075em;margin:15px 0 0;font-weight:600}.services-head p{font-size:13px;color:#798278;max-width:230px;line-height:1.6;margin:0 0 3px}.service-list{border-top:1px solid #d9dfd7}.service{display:grid;grid-template-columns:70px 1fr 30px;align-items:center;gap:20px;padding:21px 0;border-bottom:1px solid #d9dfd7;transition:padding .25s}.service:hover{padding-left:9px}.service small{font-size:11px;color:#98a095}.service b{font-size:clamp(19px,2.4vw,27px);font-weight:500;letter-spacing:-.045em}.service svg{width:18px;height:18px;stroke:#819181;fill:none;stroke-width:1.5}
+.steps{padding:112px 0 122px}.steps-top{display:flex;justify-content:space-between;align-items:end;margin-bottom:48px}.steps h2{font-size:clamp(38px,5vw,60px);letter-spacing:-.075em;line-height:1;margin:14px 0 0}.steps-top p{font-size:13px;color:var(--muted);max-width:220px;line-height:1.6;margin:0}.step-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}.step{padding:25px 24px 0 0}.step+.step{border-left:1px solid var(--line);padding-left:28px}.step-number{font-size:11px;color:var(--sage);letter-spacing:.1em}.step h3{font-size:22px;letter-spacing:-.05em;font-weight:600;margin:28px 0 8px}.step p{font-size:13px;color:var(--muted);line-height:1.65;max-width:260px;margin:0}
+.partner{background:#26342b;color:#f7f8f5;padding:75px 0 80px}.partner-inner{display:flex;align-items:center;justify-content:space-between;gap:40px}.partner .section-tag{color:#b2c3b1}.partner h2{font-size:clamp(36px,5vw,62px);line-height:1;letter-spacing:-.075em;font-weight:600;margin:18px 0 0}.partner p{font-size:14px;color:#bdc8bd;line-height:1.6;margin:15px 0 0}.partner .button{background:#f6f7f4;color:#26342b;flex-shrink:0}.partner .button:hover{background:#dfe8df}
+footer{padding:28px 0 32px;display:flex;justify-content:space-between;align-items:center;color:#8a9188;font-size:11px}.footlinks{display:flex;gap:25px}.footlinks a:hover{color:var(--ink)}
+@media(max-width:760px){.shell{width:calc(100% - 42px)}header{height:64px}.navlinks,.nav-cta{display:none}.menu{display:block}.navlinks.open{display:flex;position:absolute;top:64px;left:0;right:0;padding:12px 22px 22px;background:#f7f7f5f7;backdrop-filter:blur(18px);flex-direction:column;gap:0;border-bottom:1px solid var(--line)}.navlinks.open a{padding:15px 0;border-bottom:1px solid var(--line)}.hero{min-height:0;max-height:none;grid-template-columns:1fr;gap:0;padding:76px 0 85px}.hero h1{font-size:clamp(62px,13.8vw,94px)}.hero-copy>p{font-size:16px;margin-top:22px;max-width:330px}.eyebrow{margin-bottom:21px}.hero-actions{margin-top:27px}.visual{height:390px;min-height:0;margin:4px -20px 0}.aura{width:min(72vw,350px)}.ring{width:min(88vw,430px)}.ring.two{width:min(96vw,470px)}.visual-label{bottom:0;right:9%}.hero-foot{bottom:22px}.intro{padding:78px 0 82px;grid-template-columns:1fr;gap:20px}.intro-copy{padding:0}.intro-copy p{font-size:19px}.services{padding:70px 0 78px}.services-head{display:block;margin-bottom:25px}.services-head p{margin-top:14px}.service{grid-template-columns:38px 1fr 22px;padding:18px 0;gap:10px}.service b{font-size:20px}.steps{padding:80px 0 85px}.steps-top{display:block;margin-bottom:32px}.steps-top p{margin-top:14px}.step-grid{grid-template-columns:1fr}.step,.step+.step{border-left:0;border-bottom:1px solid var(--line);padding:20px 0 23px}.step h3{margin:13px 0 6px;font-size:20px}.step p{max-width:100%}.partner{padding:58px 0 62px}.partner-inner{display:block}.partner .button{margin-top:27px}footer{gap:18px;flex-wrap:wrap}.footlinks{gap:17px}}
+@media(max-width:390px){.hero{padding-top:60px}.hero h1{font-size:60px}.visual{height:330px}.hero-foot{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+
+/* Refined minimal pass */
+:root{--paper:#fafaf8;--ink:#20231f;--muted:#858a82;--line:#e9ebe6;--sage:#829383;--deep:#303b32}
+.shell{width:min(1100px,calc(100% - 80px))}
+header{height:70px;background:#fafaf8e8}
+.logo{font-size:23px;letter-spacing:-1.6px}
+.navlinks{gap:32px;font-size:12px}
+.hero{min-height:calc(100svh - 70px);padding:48px 0 72px;gap:5vw}
+.hero h1{font-size:clamp(62px,7.2vw,96px);letter-spacing:-.09em;line-height:.96}
+.eyebrow{font-size:10px;letter-spacing:.19em;margin-bottom:23px}
+.hero-copy>p{font-size:16px;line-height:1.65;color:#858a82;max-width:350px;margin-top:23px}
+.hero-actions{margin-top:29px;gap:21px}
+.button{height:44px;padding:0 20px;font-size:12px;border-radius:24px}
+.text-link{font-size:12px}
+.visual{height:min(540px,59vw);min-height:350px}
+.aura{width:min(34vw,420px);background:radial-gradient(circle at 38% 32%,#fff 0 10%,#edf1eb 27%,#dce5db 48%,#c8d5c8 62%,#f1f3ef 79%);box-shadow:inset -18px -22px 42px #758b791c,0 22px 65px #788d7c12;animation-duration:11s}
+.aura:before{inset:-6%;border-color:#91a49435}
+.aura:after{inset:-12%;border-color:#91a49420}
+.ring{width:min(43vw,520px);border-color:#9aab9b2c;animation-duration:13s}
+.ring.two{width:min(49vw,590px);border-color:#9aab9b1c;animation-duration:17s}
+.core{width:8px;height:8px;box-shadow:0 0 22px 10px #fafff477,0 0 70px 28px #9bb09a35}
+.visual-label{font-size:9px;letter-spacing:.16em;color:#a0a79e}
+.hero-foot{font-size:10px;color:#a1a69e}
+.intro{padding:94px 0 98px;gap:8vw}
+.intro h2{font-size:clamp(36px,4.5vw,56px);letter-spacing:-.07em}
+.intro-copy p{font-size:clamp(17px,1.7vw,21px);line-height:1.62;color:#747b73}
+.services{padding:72px 0 82px;background:#f0f2ee}
+.services h2{font-size:clamp(36px,4.5vw,54px)}
+.services-head{margin-bottom:28px}
+.services-head p{font-size:12px}
+.service{padding:18px 0;grid-template-columns:54px 1fr 24px}
+.service b{font-size:clamp(18px,2vw,23px);font-weight:500}
+.service small{font-size:10px}
+.steps{padding:92px 0 100px}
+.steps h2{font-size:clamp(36px,4.5vw,54px)}
+.steps-top{margin-bottom:38px}
+.step{padding-top:22px}
+.step h3{font-size:20px;margin-top:23px}
+.step p{font-size:12px;color:#858a82}
+.partner{background:transparent;color:var(--ink);border-top:1px solid var(--line);padding:50px 0 56px}
+.partner .section-tag{color:var(--sage)}
+.partner h2{font-size:clamp(30px,4vw,46px);margin-top:12px}
+.partner p{font-size:13px;color:#858a82;margin-top:10px}
+.partner .button{background:var(--deep);color:#fff}
+.partner .button:hover{background:#455447}
+footer{border-top:1px solid var(--line);padding:23px 0 28px}
+@media(max-width:760px){
+.shell{width:calc(100% - 42px)}
+header{height:62px}
+.hero{min-height:0;padding:65px 0 75px;gap:2px}
+.hero h1{font-size:clamp(60px,12.8vw,82px)}
+.hero-copy>p{font-size:15px;margin-top:19px}
+.hero-actions{margin-top:24px}
+.visual{height:340px;margin:0 -12px}
+.aura{width:min(68vw,320px)}
+.ring{width:min(84vw,390px)}
+.ring.two{width:min(92vw,430px)}
+.intro{padding:70px 0 74px;gap:17px}
+.intro h2{font-size:39px}
+.intro-copy p{font-size:17px}
+.services{padding:62px 0 68px}
+.service{grid-template-columns:34px 1fr 20px;padding:16px 0}
+.service b{font-size:18px}
+.steps{padding:72px 0 76px}
+.steps h2{font-size:39px}
+.partner{padding:45px 0 48px}
+.partner h2{font-size:36px}
+}
+@media(max-width:390px){.visual{height:300px}.hero h1{font-size:58px}}
+
+</style>
+</head>
+<body>
+<header><nav class="shell"><a class="logo" href="#top" aria-label="Aloha ana sayfa">aloha<span>.</span></a><div class="navlinks" id="navlinks"><a href="#aloha">Aloha nedir?</a><a href="#hizmetler">Hizmetler</a><a href="#nasil">Nasıl çalışır?</a></div><a class="nav-cta" href="mailto:hello@aloha.com">İş birliği <span aria-hidden="true">↗</span></a><button class="menu" id="menu" aria-label="Menüyü aç" aria-expanded="false"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 17h16"/></svg></button></nav></header>
+<main>
+<section class="hero shell" id="top">
+<div class="hero-copy"><div class="eyebrow">GÜNLÜK HAYATIN YENİ KOLAYLIĞI</div><h1>Bir arama<br><span>yeter.</span></h1><p>Ne aradığını söyle. Aloha, gerisini senin için halletsin.</p><div class="hero-actions"><a class="button" href="#nasil">Aloha’yı keşfet <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a><a class="text-link" href="#hizmetler">Neler yapabilir? <span>↗</span></a></div></div>
+<div class="visual" aria-label="Aloha'nın akıllı hizmet deneyimini temsil eden soyut görsel"><div class="ring"></div><div class="ring two"></div><div class="aura"></div><div class="core"></div><div class="visual-label">ALOHA INTELLIGENCE</div></div>
+<div class="hero-foot"><span>DAHA AZ UĞRAŞ. DAHA ÇOK HAYAT.</span><span class="scroll">Aşağı kaydır <i></i></span></div>
+</section>
+<section class="intro shell" id="aloha"><div><div class="section-tag">ALOHA NEDİR?</div><h2>Sen anlat.<br>O organize etsin.</h2></div><div class="intro-copy"><p>Restoran aramak, taksi bulmak, otel ayarlamak… <strong>Farklı uygulamalar arasında dolaşmana gerek yok.</strong> Aloha ihtiyacını anlar, sana uygun işletmeyi bulur ve senin adına iletişime geçerek süreci organize eder.</p></div></section>
+<section class="services" id="hizmetler"><div class="shell"><div class="services-head"><div><div class="section-tag">TEK NOKTADAN</div><h2>Ne lazımsa.</h2></div><p>Günlük ihtiyaçların, tek bir akıllı asistanla.</p></div><div class="service-list">
+<a class="service" href="#nasil"><small>01</small><b>Yemek & restoran</b><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+<a class="service" href="#nasil"><small>02</small><b>Ulaşım & taksi</b><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+<a class="service" href="#nasil"><small>03</small><b>Otel & konaklama</b><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+<a class="service" href="#nasil"><small>04</small><b>Kurye & teslimat</b><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+<a class="service" href="#nasil"><small>05</small><b>Teknik servis & daha fazlası</b><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+</div></div></section>
+<section class="steps shell" id="nasil"><div class="steps-top"><div><div class="section-tag">BU KADAR KOLAY</div><h2>Üç adım. Hepsi bu.</h2></div><p>Sen ihtiyacını söyle. Aloha ayrıntılarla ilgilensin.</p></div><div class="step-grid">
+<div class="step"><div class="step-number">01 / SÖYLE</div><h3>İhtiyacını anlat</h3><p>Ne istediğini doğal bir şekilde söylemen yeterli.</p></div>
+<div class="step"><div class="step-number">02 / BUL</div><h3>Aloha en uygununu bulsun</h3><p>Konumuna ve isteğine uygun işletmeyi belirlesin.</p></div>
+<div class="step"><div class="step-number">03 / TAMAMLA</div><h3>Senin adına organize etsin</h3><p>Arama, sipariş veya rezervasyon sürecini yönetsin.</p></div>
+</div></section>
+<section class="partner"><div class="shell partner-inner"><div><div class="section-tag">ALOHA İŞ ORTAKLIĞI</div><h2>Daha fazla müşteriye,<br>daha kolay ulaş.</h2><p>İşletmeni Aloha dünyasına dahil et.</p></div><a class="button" href="mailto:hello@aloha.com">İş birliği için ulaş <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div></section>
+</main>
+<footer class="shell"><a class="logo" href="#top">aloha<span>.</span></a><span>© 2026 Aloha</span><div class="footlinks"><a href="#aloha">Aloha nedir?</a><a href="#hizmetler">Hizmetler</a><a href="mailto:hello@aloha.com">İletişim</a></div></footer>
+<script>(()=>{const b=document.getElementById('menu'),n=document.getElementById('navlinks');b.addEventListener('click',()=>{const o=n.classList.toggle('open');b.setAttribute('aria-expanded',String(o));b.setAttribute('aria-label',o?'Menüyü kapat':'Menüyü aç');b.innerHTML=o?'<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>':'<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 17h16"/></svg>'});n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{n.classList.remove('open');b.setAttribute('aria-expanded','false')}));})();
+</script>
+</body></html>
