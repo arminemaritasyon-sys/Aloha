@@ -112,6 +112,8 @@ export default async function handler(req, res) {
       )
     `;
 
+    await sql`ALTER TABLE aloha_call_logs ADD COLUMN IF NOT EXISTS raw_payload JSONB`;
+
     await sql`
       INSERT INTO aloha_call_logs
         (job_id, room_id, room_name, started_at, ended_at, duration_seconds, summary, results, raw_payload, created_at)
