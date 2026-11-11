@@ -4,12 +4,31 @@ import { createHash, timingSafeEqual } from "node:crypto";
 function authorized(req) {
   const expected = (process.env.LIVEKIT_WEBHOOK_SECRET || "").trim();
   const header = String(req.headers.authorization || "").trim();
-  const match = header.match(/^Bearer\\s+(.+)$/i);
+  const match = header.match(/^Bearer\s+(.+)$/i);
   const supplied = match ? match[1].trim() : "";
   if (!expected || !supplied) return false;
   const a = Buffer.from(expected);
   const b = Buffer.from(supplied);
   return a.length === b.length && timingSafeEqual(a, b);
+}
+
+
+async function recordWebhookHealth(status, detail) {
+  try {
+    const sql = neon(process.env.DATABASE_URL);
+    await sql`CREATE TABLE IF NOT EXISTS aloha_webhook_health (
+      id SMALLINT PRIMARY KEY CHECK (id = 1),
+      status TEXT NOT NULL,
+      detail TEXT,
+      last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
+    await sql`INSERT INTO aloha_webhook_health (id, status, detail, last_seen_at)
+      VALUES (1, ${status}, ${detail}, NOW())
+      ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status,
+      detail = EXCLUDED.detail, last_seen_at = NOW()`;
+  } catch (error) {
+    console.error("aloha_webhook_health_write_error", { message: error?.message || String(error) });
+  }
 }
 
 function first(...values) {
@@ -102,6 +121,7 @@ export default async function handler(req, res) {
   });
 
   if (!authorized(req)) {
+    await recordWebhookHealth("unauthorized", "Gelen Authorization anahtarı Vercel anahtarıyla eşleşmedi.");
     console.warn("aloha_webhook_unauthorized", {
       authorizationHeaderPresent: Boolean(req.headers.authorization),
       secretConfigured: Boolean(process.env.LIVEKIT_WEBHOOK_SECRET)
@@ -109,9 +129,11 @@ export default async function handler(req, res) {
     return res.status(401).json({ ok: false, error: "unauthorized" });
   }
 
+  await recordWebhookHealth("authenticated", "Webhook anahtarı eşleşti; istek doğrulandı.");
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     if (!body || typeof body !== "object" || Array.isArray(body)) {
+      await recordWebhookHealth("invalid_payload", "Anahtar eşleşti ancak gönderilen içerik geçersiz.");
       console.warn("aloha_webhook_invalid_payload", { bodyType: typeof body });
       return res.status(400).json({ ok: false, error: "invalid_payload" });
     }
@@ -166,9 +188,11 @@ export default async function handler(req, res) {
         raw_payload = EXCLUDED.raw_payload
     `;
 
+    await recordWebhookHealth("saved", "Anahtar eşleşti ve görüşme kaydı veritabanına yazıldı.");
     console.info("aloha_webhook_saved", { jobId: call.jobId, roomNamePresent: Boolean(call.roomName) });
     return res.status(200).json({ ok: true, saved: true, job_id: call.jobId });
   } catch (error) {
+    await recordWebhookHealth("save_failed", "Anahtar eşleşti ancak görüşme veritabanına yazılamadı.");
     console.error("aloha_summary_save_error", {
       name: error?.name || "Error",
       message: error?.message || String(error),
