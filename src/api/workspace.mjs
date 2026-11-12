@@ -8,7 +8,7 @@ function validKey(req) {
   const a = Buffer.from(expected), b = Buffer.from(supplied);
   return a.length === b.length && timingSafeEqual(a, b);
 }
-const TYPES = new Set(["task", "business", "product", "followup"]);
+const TYPES = new Set(["task", "business", "product", "followup", "support", "campaign", "inventory", "feedback", "offer"]);
 const STATUSES = new Set(["open", "in_progress", "done", "archived"]);
 const clean = (v, max = 2000) => String(v ?? "").trim().slice(0, max);
 
