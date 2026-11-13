@@ -11,28 +11,20 @@ Her araçta şu HTTP header'ını tanımla:
 
 Bu, mevcut LiveKit Summary webhook'unda kullanılan aynı LiveKit secret adıdır. Vercel tarafındaki `LIVEKIT_WEBHOOK_SECRET` ile aynı değer olmalıdır. Secret değerini konuşma metnine veya istemci tarafına koyma.
 
-## Araç 1 — Adresi koordinata çevir
+## Tek araç — Konuma göre her tür işletmeyi ara
 
-- Tool name: `geocode_customer_address`
-- Method: `POST`
-- URL: `https://aloha-kohl.vercel.app/api/geocode`
-- Parameters:
-  - `address` — string, required. Müşterinin tam teslimat adresi; il, ilçe, mahalle, cadde/sokak, bina/kapı no, daire, kat ve tarif dahil.
-
-Başarılı yanıt `best_match.latitude`, `best_match.longitude`, `best_match.label` alanlarını döndürür. `matched=false` ise koordinat uydurma; adresi müşteriden netleştir.
-
-## Araç 2 — Yakındaki işletmeleri bul
-
-- Tool name: `find_nearby_food_businesses`
+- Tool name: `search_nearby_places`
 - Method: `POST`
 - URL: `https://aloha-kohl.vercel.app/api/business-search`
+- Header: `Authorization: Bearer {{secrets.ALOHA_WEBHOOK_SECRET}}`
 - Parameters:
-  - `latitude` — number, required. Geocode sonucundaki en iyi eşleşmenin enlemi.
-  - `longitude` — number, required. Geocode sonucundaki en iyi eşleşmenin boylamı.
-  - `radius_m` — integer, optional, default 2500, min 300, max 5000.
-  - `category` — string, optional; `all`, `doner`, `cafe`, `kofte`.
+  - `address` — string, required when coordinates are not already known. Müşterinin söylediği adres/mahalle/ilçe.
+  - `query` — string, required. Müşterinin isteğini doğal dilde yaz; ör. "köfteci", "şu an açık eczane", "çocuklu aileye uygun kahvaltı yeri", "yakındaki market".
+  - `open_now` — boolean, optional. Müşteri açık yer istiyorsa true.
+  - `radius_m` — integer, optional, default 5000, max 50000.
+  - `latitude`, `longitude` — optional; yalnızca görüşmede doğrulanmış koordinat varsa gönder.
 
-Sonuçları kuş uçuşu mesafeye göre sıralar. `open_status` şu an için `unknown`; işletmenin açık olduğunu varsayma. `delivery_status` sadece OSM kaydında `delivery=yes` varsa etiketle doğrulanmış olur. Diğer durumlarda paket servisi işletmeden teyit edilmeden müşteriye söz verme. Telefon veya saat bilgisi eksik olabilir. Sonuç yoksa adresi/radyusu düzelt veya müşteriye alternatif sor.
+Bu tek araç adresi Google Geocoding ile çözer ve Google Places Text Search ile doğal dil sorgusunu arar. Kategori listesi veya her kategori için ayrı araç gerekmez. Yanıtta işletme adı, adres, telefon, puan, Google'ın verdiği açık olma bilgisi, mesafe ve Google Maps bağlantısı bulunabilir.
 
 ## Araç 3 — Müşteri onayı sonrası siparişi kaydet
 
@@ -65,13 +57,12 @@ API, agent çağrısında `confirmed` true değilse 409 döndürür. Agent sipar
 Müşteri "yakınımda köfteci var mı?", "şu an açık bir restoran bul" veya benzeri bir yerel işletme sorusu sorduğunda bu akışı sipariş alma şartı aramadan başlat:
 
 1. Müşterinin söylediği adresi veya tarif ettiği konumu al. Telefon numarasından GPS konumu çıkarmaya çalışma.
-2. Adres eksikse yalnızca gerekli mahalle/ilçe/cadde bilgisini sor.
-3. `geocode_customer_address` aracını POST ile çağır; `address` alanına müşterinin söylediği adresi gönder.
-4. `matched=false` ise koordinat üretme; adresi netleştir. Eşleşme varsa ilçe/mahalle bilgisini müşteriye okuyup konumu teyit et.
-5. `find_nearby_food_businesses` aracını POST ile çağır. Köfteci için `category=kofte`, döner için `category=doner`, genel restoran için `category=all` kullan. Varsayılan yarıçap 2500 metredir; müşteri isterse 5000 metreye kadar genişlet.
-6. Dönen işletmeleri mesafeye göre değerlendir; isim, kategori, adres ve telefon bilgisi mevcutsa kullan. En fazla 3-5 uygun sonucu kısa ve doğal biçimde sesli sun.
-7. `open_status=unknown` ise işletmenin açık olduğunu iddia etme. `opening_hours` alanı varsa "çalışma saati bilgisi var, ancak şu an açık olduğunu canlı doğrulayamıyorum" de. Telefon numarası varsa müşteriye teyit için arayabileceğini söyle; kendin arama başlatma.
-8. Sonuç yoksa yarıçapı genişletmeyi veya farklı kategori/mahalle denemeyi teklif et. Uydurma işletme, telefon, fiyat, yol mesafesi ya da açık olma bilgisi verme.
+2. Müşterinin isteğini kendi kelimeleriyle anla; kategori koduna çevirmeye çalışma. Örn. "yakınımda köfteci", "şu an açık eczane", "uygun fiyatlı kahvaltı".
+3. Tek araç `search_nearby_places` çağrısına müşterinin adresini `address`, doğal dilde isteğini `query` olarak gönder. Müşteri açık yer istiyorsa `open_now=true` kullan.
+4. Adres Google'da eşleşmezse koordinat uydurma; müşteriden mahalle/ilçe/cadde bilgisini netleştir.
+5. Sonuçları mesafe, alaka ve mevcut puan bilgisine göre değerlendir. En fazla 3-5 uygun sonucu kısa ve doğal biçimde sesli sun.
+6. Google açık olma bilgisi döndürmüşse bunu aktar. Bilgi yoksa açık olduğunu iddia etme.
+7. Sonuç yoksa yarıçapı genişletmeyi veya adresi netleştirmeyi teklif et. Uydurma işletme, telefon, fiyat veya yol mesafesi verme.
 
 Örnek konuşma:
 - Müşteri: "Kepez'de verdiğim adrese yakın köfteci var mı?"
