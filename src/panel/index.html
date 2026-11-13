@@ -639,7 +639,7 @@ function liveRender(){
    }
    button.disabled=true;const oldText=button.textContent;button.textContent=action==="transfer"?"Aktarılıyor…":action==="hold"?"Bekletiliyor…":"Devam ettiriliyor…";
    try{
-     await api("/api/live-call-control",{method:"POST",body:JSON.stringify({callId,action,destination})});
+     await api("/api/live-call-end",{method:"POST",body:JSON.stringify({callId,action,destination})});
      toast(action==="transfer"?"Çağrı aktarımı başlatıldı.":action==="hold"?"Çağrı bekletmeye alındı.":"Çağrıya devam ediliyor.");
      await refreshLive(true,false);
    }catch(error){toast("Çağrı işlemi başarısız: "+error.message);button.disabled=false;button.textContent=oldText}
