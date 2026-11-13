@@ -102,11 +102,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "valid_coordinates_required" });
     }
 
+    const foodTypes = ['node["amenity"~"^(restaurant|fast_food)$"]', 'way["amenity"~"^(restaurant|fast_food)$"]', 'relation["amenity"~"^(restaurant|fast_food)$"]'];
     const filters = category === "cafe"
       ? ['node["amenity"="cafe"]', 'way["amenity"="cafe"]', 'relation["amenity"="cafe"]']
       : category === "doner"
         ? ['node["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kebab|doner|shawarma",i]', 'way["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kebab|doner|shawarma",i]', 'relation["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kebab|doner|shawarma",i]']
-        : ['node["amenity"~"^(restaurant|fast_food)$"]', 'way["amenity"~"^(restaurant|fast_food)$"]', 'relation["amenity"~"^(restaurant|fast_food)$"]'];
+        : category === "kofte"
+          ? [
+              'node["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kofte|köfte|meat|grill|turkish",i]',
+              'way["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kofte|köfte|meat|grill|turkish",i]',
+              'relation["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kofte|köfte|meat|grill|turkish",i]',
+              'node["amenity"~"^(restaurant|fast_food)$"]["name"~"köfte|kofte|köfteci|kofteci",i]',
+              'way["amenity"~"^(restaurant|fast_food)$"]["name"~"köfte|kofte|köfteci|kofteci",i]',
+              'relation["amenity"~"^(restaurant|fast_food)$"]["name"~"köfte|kofte|köfteci|kofteci",i]'
+            ]
+          : foodTypes;
 
     const query = `[out:json][timeout:20];( ${filters.map((filter) => `${filter}(around:${radius},${lat},${lon});`).join(" ")} );out center tags;`;
     const endpoint = clean(process.env.OVERPASS_API_URL || "https://overpass-api.de/api/interpreter", 300);
