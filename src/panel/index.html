@@ -210,6 +210,34 @@ tbody tr:hover{background:#f8f9fb}
  .card-head{padding:14px}
 }
 
+
+/* Akıllı İşletme Bul */
+.business-finder-page .finder-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:14px;margin-bottom:14px;align-items:start}
+.business-finder-page .finder-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.business-finder-page .finder-fields label{display:grid;gap:6px;color:#667386;font-size:10px;font-weight:650}
+.business-finder-page .finder-fields .wide{grid-column:1/-1}
+.business-finder-page .finder-fields input,.business-finder-page .finder-fields select{width:100%;min-height:39px}
+.finder-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.finder-note{font-size:9px;color:#8b96a5;line-height:1.5}
+.finder-status-line{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #eef1f5;font-size:10px;color:#7b8797}
+.finder-status-line b{color:#263244;text-align:right}
+.finder-disclaimer{font-size:9px;color:#8b96a5;line-height:1.6;margin:14px 0 0}
+.finder-results-card{overflow:hidden}
+.finder-empty{padding:38px 18px;text-align:center;color:#8b96a5;font-size:11px}
+.finder-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 18px;padding:16px 18px;border-top:1px solid #eef1f5}
+.finder-result:first-child{border-top:0}
+.finder-result-main{min-width:0}
+.finder-result-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.finder-result-title b{font-size:12px;color:#253144}
+.finder-result-meta{display:flex;gap:7px 16px;flex-wrap:wrap;margin-top:8px;color:#687589;font-size:10px}
+.finder-result-meta span{overflow-wrap:anywhere}
+.finder-result-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.finder-result-actions button,.finder-result-actions a{border:1px solid #e0e6f0;background:#fff;border-radius:7px;padding:8px 10px;color:#5265c8;text-decoration:none;font-size:10px;font-weight:650;white-space:nowrap}
+.finder-result-actions button:disabled{opacity:.55;cursor:default}
+.finder-result-actions .finder-save{background:#4263eb;border-color:#4263eb;color:#fff}
+.finder-bottom-note{margin-top:12px;padding:13px 15px;border:1px solid #e8edf3;border-radius:10px;background:#fff;color:#778397;font-size:10px;line-height:1.6}
+.finder-bottom-note b{color:#344054}
+@media(max-width:760px){.business-finder-page .finder-layout{grid-template-columns:1fr}.business-finder-page .finder-fields{grid-template-columns:1fr}.business-finder-page .finder-fields .wide{grid-column:auto}.finder-result{grid-template-columns:1fr;padding:14px}.finder-result-actions{justify-content:flex-start}.finder-result-meta{display:grid;gap:7px}}
 </style></head><body><div class="app">
 <aside class="sidebar" id="sidebar"><div class="logo">aloha<span>.</span><small>OPERASYON</small></div>
 <div class="nav-caption">OPERASYON</div><nav class="nav">
@@ -221,6 +249,7 @@ tbody tr:hover{background:#f8f9fb}
 <a href="#customers" data-page="customers"><span class="ico">♙</span>Müşteriler</a>
 <a href="#followups" data-page="followups"><span class="ico">◷</span>Geri Aramalar</a>
 <a href="#businesses" data-page="businesses"><span class="ico">⌂</span>İşletmeler</a>
+<a href="#business-finder" data-page="business-finder"><span class="ico">⌕</span>Akıllı İşletme Bul</a>
 <div class="nav-caption">YÖNETİM</div>
 <a href="#intelligence" data-page="intelligence"><span class="ico">✧</span>İş Zekâsı</a>
 <a href="#reports" data-page="reports"><span class="ico">▥</span>Raporlar</a>
@@ -314,6 +343,22 @@ tbody tr:hover{background:#f8f9fb}
 <div class="page-heading"><div><div class="eyebrow">EKİP ORGANİZASYONU</div><h1>Görev ve İş Takibi</h1></div><button class="btn" data-workspace-refresh="task">↻ Yenile</button></div>
 <div class="workspace-layout"><form class="card workspace-form" data-workspace-form="task"><div class="card-head"><div><h2>Yeni kayıt oluştur</h2><p>Bilgileri kaydettiğinde veritabanına eklenir.</p></div></div><div class="card-body workspace-fields"><label>Görev başlığı<input name="title" required maxlength="180" placeholder="Örn. İşletmeden sipariş teyidi al"></label><label>Sorumlu kişi<input name="assignee" placeholder="Personel adı"></label><label>Öncelik<select name="priority"><option value="normal">Normal</option><option value="high">Yüksek</option><option value="urgent">Acil</option></select></label><label>Son tarih<input name="due_at" type="datetime-local"></label><label class="wide">Açıklama<textarea name="description" placeholder="Görev detayları…"></textarea></label></div><div class="workspace-submit"><button class="btn primary" type="submit">Görevi kaydet</button></div></form>
 <div class="card workspace-records"><div class="card-head"><div><h2>Kayıtlar</h2><p data-workspace-count="task">Yükleniyor…</p></div><input class="input workspace-search" data-workspace-search="task" placeholder="Kayıtlarda ara…"></div><div class="workspace-list" data-workspace-list="task"><div class="ops-empty">Kayıtlar yükleniyor…</div></div></div></div></section>
+<section class="page business-finder-page" id="page-business-finder">
+<div class="page-heading"><div><div class="eyebrow">ALOHA · İŞLETME KEŞFİ</div><h1>Akıllı İşletme Bul</h1><p>Adres çevresindeki işletmeleri bul, bilgilerini doğrula ve işletme rehberine kaydet.</p></div><span class="status blue">Telefon araması SIP bağlantısından sonra</span></div>
+<div class="finder-layout">
+<form class="card finder-form" id="businessFinderForm">
+<div class="card-head"><div><h2>Arama kriterleri</h2><p>Önce adresi haritada eşleştirir, sonra çevredeki işletmeleri listeler.</p></div></div>
+<div class="card-body finder-fields">
+<label class="wide">Müşterinin adresi<input id="finderAddress" class="input" required minlength="8" placeholder="Örn. Antalya, Muratpaşa, Cumhuriyet Mahallesi…"></label>
+<label>İşletme türü<select id="finderCategory" class="input"><option value="all">Restoran / fast food</option><option value="cafe">Kafe</option><option value="doner">Döner / kebap</option></select></label>
+<label>Arama yarıçapı<select id="finderRadius" class="input"><option value="1000">1 km</option><option value="2500" selected>2,5 km</option><option value="5000">5 km</option></select></label>
+<div class="wide finder-actions"><button class="btn primary" id="finderSubmit" type="submit">⌕ İşletmeleri bul</button><span class="finder-note">Kaynak: OpenStreetMap · Telefon ve açık olma bilgisi her işletmede bulunmayabilir.</span></div>
+</div></form>
+<div class="card finder-status-card"><div class="card-head"><h2>Arama durumu</h2><span class="status" id="finderState">Hazır</span></div><div class="card-body"><div class="finder-status-line"><span>Adres eşleşmesi</span><b id="finderAddressState">Bekliyor</b></div><div class="finder-status-line"><span>İşletme kaynağı</span><b>OpenStreetMap</b></div><div class="finder-status-line"><span>Telefonla aranabilir</span><b id="finderCallable">—</b></div><div class="finder-status-line"><span>Bulunan işletme</span><b id="finderCount">0</b></div><p class="finder-disclaimer">Harita kaydı işletmenin açık olduğunu, telefonunun güncel olduğunu veya hizmet sunduğunu garanti etmez. Arama öncesi bilgiler teyit edilmelidir.</p></div></div>
+</div>
+<div class="card finder-results-card"><div class="card-head"><div><h2>Bulunan işletmeler</h2><p id="finderResultsCaption">Arama yaptığında sonuçlar burada görünecek.</p></div><button class="btn" id="finderClear" type="button">Temizle</button></div><div id="finderResults"><div class="finder-empty">Henüz arama yapılmadı.</div></div></div>
+<div class="finder-bottom-note"><b>Telefon arama aşaması:</b> Bu modül işletmeleri bulur ve rehbere kaydeder. Gerçek dış arama başlatmak için LiveKit SIP outbound trunk ve Aloha arama kuyruğu entegrasyonu ayrıca etkinleştirilecek. Bu aşamada hiçbir işletme otomatik aranmaz.</div>
+</section>
 <section class="page workspace-page" id="page-businesses">
 <div class="page-heading"><div><div class="eyebrow">İŞ ORTAKLARI</div><h1>İşletme Rehberi</h1></div><button class="btn" data-workspace-refresh="business">↻ Yenile</button></div>
 <div class="workspace-layout"><form class="card workspace-form" data-workspace-form="business"><div class="card-head"><div><h2>Yeni kayıt oluştur</h2><p>Bilgileri kaydettiğinde veritabanına eklenir.</p></div></div><div class="card-body workspace-fields"><label>İşletme adı<input name="title" required maxlength="180" placeholder="İşletme adı"></label><label>Telefon<input name="phone" type="tel" placeholder="+90…"></label><label>Kategori<input name="category" placeholder="Restoran, market, eczane…"></label><label>Yetkili kişi<input name="contact" placeholder="Yetkili adı"></label><label class="wide">Adres<input name="address" placeholder="Açık adres"></label><label class="wide">Çalışma / sipariş notları<textarea name="notes" placeholder="Çalışma saatleri, teslimat bölgeleri, özel notlar…"></textarea></label></div><div class="workspace-submit"><button class="btn primary" type="submit">İşletmeyi kaydet</button></div></form>
@@ -401,7 +446,7 @@ const $=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,
 const savedKey=localStorage.getItem("aloha_panel_key")||sessionStorage.getItem("aloha_panel_key")||"";
 if(savedKey)localStorage.setItem("aloha_panel_key",savedKey);
 const s={key:savedKey,calls:[],orders:[],histories:[],annotations:{},workspace:[]};
-const names={dashboard:"Genel Bakış",live:"Canlı İzle",calls:"Görüşmeler",orders:"Siparişler",operations:"Operasyon",journey:"Müşteri Yolculuğu",brands:"Firmalar & Markalar",customers:"Müşteriler",tasks:"Görev ve İş Takibi",businesses:"İşletme Rehberi",products:"Ürün Kataloğu",followups:"Geri Aramalar",reports:"Raporlar",intelligence:"İş Zekâsı",settings:"Ayarlar"};
+const names={dashboard:"Genel Bakış",live:"Canlı İzle",calls:"Görüşmeler",orders:"Siparişler",operations:"Operasyon",journey:"Müşteri Yolculuğu",brands:"Firmalar & Markalar",customers:"Müşteriler",tasks:"Görev ve İş Takibi",businesses:"İşletme Rehberi","business-finder":"Akıllı İşletme Bul",products:"Ürün Kataloğu",followups:"Geri Aramalar",reports:"Raporlar",intelligence:"İş Zekâsı",settings:"Ayarlar"};
 const labels={pending:"Onay bekliyor",confirmed:"Onaylandı",sent_to_business:"İşletmeye iletildi",preparing:"Hazırlanıyor",courier_picked_up:"Kurye teslim aldı",on_the_way:"Yolda",delivered:"Teslim edildi",completed:"Tamamlandı",cancelled:"İptal",rejected:"Reddedildi"};
 const date=v=>v?new Date(v).toLocaleString("tr-TR"):"—",sec=v=>Math.max(0,Number(v)||0),dur=v=>{v=sec(v);return v>=3600?Math.floor(v/3600)+" sa "+Math.floor(v%3600/60)+" dk":v>=60?Math.floor(v/60)+" dk "+v%60+" sn":v+" sn"};
 const toast=t=>{$("toast").textContent=t;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2500)};
@@ -472,6 +517,41 @@ $("brandSearch")?.addEventListener("input",renderBrands);
 $("brandsRefresh")?.addEventListener("click",async()=>{try{await Promise.all([loadWorkspace(),loadCalls(),loadOrders()]);renderBrands();toast("Firma performansı yenilendi.")}catch(e){toast(e.message)}});
 function renderWorkspace(type){const list=document.querySelector('[data-workspace-list="'+type+'"]');if(!list)return;const q=(document.querySelector('[data-workspace-search="'+type+'"]')?.value||"").toLocaleLowerCase("tr-TR");const items=workspaceItems(type).filter(x=>(x.title+" "+JSON.stringify(x.data||{})).toLocaleLowerCase("tr-TR").includes(q));const count=document.querySelector('[data-workspace-count="'+type+'"]');if(count)count.textContent=items.length+" kayıt";if(!items.length){list.innerHTML='<div class="ops-empty">Henüz kayıt yok. İlk kaydı yukarıdaki formdan ekleyin.</div>';return}list.innerHTML=items.map(x=>{const d=x.data||{},meta=Object.entries(d).filter(([k,v])=>v!==null&&v!==undefined&&String(v).trim()!=="").map(([k,v])=>esc(({phone:"Telefon",category:"Kategori",contact:"Yetkili",address:"Adres",assignee:"Sorumlu",priority:"Öncelik",price:"Fiyat",currency:"Para birimi",due_at:"Tarih",channel:"Kanal",description:"Açıklama",notes:"Not",note:"Not",stage:"Aşama",reference:"Referans",business:"İşletme",details:"İşlem ayrıntısı",source_url:"Kaynak"}[k]||k)+": "+v)).join(" · ");return '<article class="workspace-item"><div class="workspace-item-top"><div><div class="workspace-item-title">'+esc(x.title)+'</div><div class="workspace-item-meta">'+meta+'</div>'+(x.due_at?'<div class="workspace-item-meta">Hatırlatma: '+esc(date(x.due_at))+'</div>':'')+'</div><span class="status '+(x.status==="done"?"green":x.status==="in_progress"?"blue":x.status==="archived"?"":"amber")+'">'+esc(workspaceStatus[x.status]||x.status)+'</span></div><div class="workspace-item-actions"><select class="input" data-ws-status="'+esc(x.id)+'" data-ws-type="'+type+'"><option value="open" '+(x.status==="open"?"selected":"")+'>Açık</option><option value="in_progress" '+(x.status==="in_progress"?"selected":"")+'>Devam ediyor</option><option value="done" '+(x.status==="done"?"selected":"")+'>Tamamlandı</option><option value="archived" '+(x.status==="archived"?"selected":"")+'>Arşivle</option></select><button type="button" data-ws-delete="'+esc(x.id)+'" data-ws-type="'+type+'">Sil</button></div></article>'}).join("");list.querySelectorAll("[data-ws-status]").forEach(el=>el.onchange=async()=>{try{await api("/api/workspace",{method:"PATCH",body:JSON.stringify({id:el.dataset.wsStatus,type,status:el.value})});await loadWorkspace();toast("Kayıt durumu güncellendi.")}catch(e){toast(e.message)}});list.querySelectorAll("[data-ws-delete]").forEach(el=>el.onclick=async()=>{if(!confirm("Bu kaydı silmek istiyor musunuz?"))return;try{await api("/api/workspace",{method:"DELETE",body:JSON.stringify({id:el.dataset.wsDelete,type})});await loadWorkspace();toast("Kayıt silindi.")}catch(e){toast(e.message)}})}
 async function loadWorkspace(){const d=await api("/api/workspace");s.workspace=d.items||[];["task","business","product","followup","journey"].forEach(renderWorkspace);renderBrands();renderIntelligence();return s.workspace}
+
+/* Akıllı İşletme Bul: geocode -> OSM business search -> save to workspace */
+let finderResults=[];
+function renderFinderResults(){
+ const root=$("finderResults");
+ $("finderCount").textContent=String(finderResults.length);
+ $("finderCallable").textContent=String(finderResults.filter(x=>x.phone).length);
+ $("finderResultsCaption").textContent=finderResults.length?finderResults.length+" işletme bulundu · "+finderResults.filter(x=>x.phone).length+" telefon numarası mevcut":"Sonuç bulunamadı";
+ if(!finderResults.length){root.innerHTML='<div class="finder-empty">Bu konumda eşleşen işletme bulunamadı. Yarıçapı artırıp yeniden deneyebilirsin.</div>';return}
+ root.innerHTML=finderResults.map((b,i)=>'<article class="finder-result"><div class="finder-result-main"><div class="finder-result-title"><b>'+esc(b.name)+'</b><span class="status '+(b.phone?'green':'amber')+'">'+(b.phone?'Telefon mevcut':'Telefon bulunamadı')+'</span></div><div class="finder-result-meta"><span>'+esc(b.category||"İşletme")+'</span><span>'+esc(b.address||"Adres kaydı yok")+'</span><span>'+esc(b.straight_line_distance_m>=1000?(b.straight_line_distance_m/1000).toFixed(1)+" km":b.straight_line_distance_m+" m")+' · kuş uçuşu</span>'+(b.opening_hours?'<span>Saat: '+esc(b.opening_hours)+'</span>':'')+'</div></div><div class="finder-result-actions">'+(b.phone?'<a href="tel:'+esc(b.phone)+'">Telefonu gör</a>':'')+'<a href="'+esc(b.maps_url)+'" target="_blank" rel="noopener">Haritada aç</a><button class="finder-save" type="button" data-finder-save="'+i+'">Rehbere kaydet</button></div></article>').join("");
+ root.querySelectorAll("[data-finder-save]").forEach(btn=>btn.onclick=async()=>{
+  const b=finderResults[Number(btn.dataset.finderSave)];if(!b)return;
+  btn.disabled=true;btn.textContent="Kaydediliyor…";
+  try{
+   const duplicate=s.workspace.some(x=>x.type==="business"&&String(x.data?.osm_id||"")===String(b.osm_id)&&String(x.data?.osm_type||"")===String(b.osm_type));
+   if(duplicate){btn.textContent="Zaten kayıtlı";toast("Bu işletme rehberde zaten kayıtlı.");return}
+   await api("/api/workspace",{method:"POST",body:JSON.stringify({type:"business",title:b.name,status:"open",data:{phone:b.phone,category:b.category,address:b.address,latitude:b.latitude,longitude:b.longitude,source:"OpenStreetMap",osm_id:b.osm_id,osm_type:b.osm_type,opening_hours:b.opening_hours,maps_url:b.maps_url,delivery_status:b.delivery_status,call_status:"not_started"}})});
+   await loadWorkspace();btn.textContent="Kaydedildi";toast("İşletme rehberine kaydedildi.");
+  }catch(e){btn.disabled=false;btn.textContent="Rehbere kaydet";toast(e.message)}
+ });
+}
+$("businessFinderForm")?.addEventListener("submit",async e=>{
+ e.preventDefault();const submit=$("finderSubmit"),address=$("finderAddress").value.trim(),category=$("finderCategory").value,radius=Number($("finderRadius").value);
+ submit.disabled=true;submit.textContent="Adres aranıyor…";$("finderState").textContent="Adres aranıyor";$("finderAddressState").textContent="Kontrol ediliyor";finderResults=[];renderFinderResults();
+ try{
+  const geo=await api("/api/geocode",{method:"POST",body:JSON.stringify({address})});
+  if(!geo.matched||!geo.best_match)throw Error(geo.message||"Adres eşleştirilemedi. İl, ilçe, mahalle ve cadde bilgisini ayrıntılandır.");
+  const point=geo.best_match;$("finderAddressState").textContent="Eşleşti · "+(point.label||"Konum bulundu");$("finderState").textContent="İşletmeler aranıyor";submit.textContent="İşletmeler aranıyor…";
+  const found=await api("/api/business-search",{method:"POST",body:JSON.stringify({latitude:point.latitude,longitude:point.longitude,category,radius_m:radius})});
+  finderResults=found.businesses||[];renderFinderResults();$("finderState").textContent=finderResults.length?"Tamamlandı":"Sonuç yok";toast(finderResults.length+" işletme bulundu.");
+ }catch(err){$("finderState").textContent="Hata";$("finderAddressState").textContent="Eşleşme başarısız";$("finderResults").innerHTML='<div class="finder-empty">'+esc(err.message)+'</div>';toast(err.message)}
+ finally{submit.disabled=false;submit.textContent="⌕ İşletmeleri bul"}
+});
+$("finderClear")?.addEventListener("click",()=>{finderResults=[];renderFinderResults();$("finderState").textContent="Hazır";$("finderAddressState").textContent="Bekliyor"});
+
 document.querySelectorAll("[data-workspace-form]").forEach(form=>form.onsubmit=async e=>{e.preventDefault();const type=form.dataset.workspaceForm,data=Object.fromEntries(new FormData(form));const title=data.title;delete data.title;const dueAt=data.due_at||null;delete data.due_at;try{await api("/api/workspace",{method:"POST",body:JSON.stringify({type,title,data,due_at:dueAt})});form.reset();await loadWorkspace();toast("Yeni kayıt başarıyla kaydedildi.")}catch(err){toast(err.message)}});
 document.querySelectorAll("[data-workspace-search]").forEach(el=>el.oninput=()=>renderWorkspace(el.dataset.workspaceSearch));
 document.querySelectorAll("[data-workspace-refresh]").forEach(el=>el.onclick=()=>loadWorkspace().then(()=>toast("Kayıtlar yenilendi.")).catch(e=>toast(e.message)));
