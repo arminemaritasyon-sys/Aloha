@@ -266,6 +266,17 @@ tbody tr:hover{background:#f8f9fb}
 .live-end-call{justify-self:end;border:1px solid #f1caca;background:#fff4f4;color:#c43d3d;border-radius:7px;padding:7px 11px;font-size:10px;font-weight:750;display:inline-flex;align-items:center;gap:6px}
 .live-end-call:hover{background:#ffe8e8}
 .live-end-call:disabled{opacity:.55;cursor:wait}
+
+.live-control-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.live-control-row button{border:1px solid #dfe5ef;background:#fff;color:#435064;border-radius:7px;padding:8px 10px;font-size:10px;font-weight:700}
+.live-control-row button:hover{background:#f5f7ff;border-color:#cbd5ff}
+.live-control-row button:disabled{opacity:.45;cursor:not-allowed}
+.live-control-row .live-end-call{margin:0;background:#fff4f4;border-color:#f4d8d8;color:#c34444}
+.live-control-row .live-control-primary{background:#eef2ff;border-color:#dce4ff;color:#4259c5}
+.live-call-note{margin-top:9px;padding:8px 10px;border-radius:7px;background:#f7f9fc;color:#586579;font-size:10px;line-height:1.5}
+.live-held-hint{margin-top:8px;color:#a56b15;font-size:9px;font-weight:700}
+@media(max-width:700px){.live-control-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.live-control-row button{width:100%;padding:10px 7px}}
+
 </style></head><body><div class="app">
 <aside class="sidebar" id="sidebar"><div class="logo">aloha<span>.</span><small>OPERASYON</small></div>
 <div class="nav-caption">OPERASYON</div><nav class="nav">
@@ -603,7 +614,34 @@ function liveRender(){
  $("liveActiveCaption").textContent=ringingCalls.length+" çalıyor · "+connectedCalls.length+" görüşmede";
  $("liveSessionState").textContent=activeCalls.length?ringingCalls.length+" çalıyor · "+connectedCalls.length+" görüşmede":(s.liveWebhook?"Şu anda aktif arama yok":"LiveKit webhook olayı bekleniyor");const lkState=$("liveKitSourceState");if(lkState){lkState.className=s.liveWebhook?"source-state":"source-state pending";lkState.textContent=s.liveWebhook?"Olay alındı · "+date(s.liveWebhook.last_seen_at):"Webhook bekleniyor";}
  $("liveTodayCalls").textContent=todayCalls.length;$("liveOpenOrders").textContent=openOrders.length;$("liveFollowups").textContent=followups.length;
- $("liveActiveFeed").innerHTML=activeCalls.length?'<div class="live-active-grid">'+activeCalls.map(c=>{const ringing=c.status==="ringing",phone=c.caller_phone||c.room_name||"Yeni gelen arama",state=ringing?"ÇALIYOR":"GÖRÜŞMEDE";return '<article class="live-active-card '+(ringing?"ringing":"")+'"><div class="live-active-top"><div class="live-active-caller"><span class="live-active-icon">'+(ringing?"↗":"☎")+'</span><div><strong>'+esc(c.caller_name||phone)+'</strong><small>'+esc(c.caller_phone||c.room_name||"Numara bekleniyor")+'</small></div></div><span class="live-active-badge">'+state+'</span></div><div class="live-active-meta"><span>'+(ringing?"Gelen arama · Yanıt bekliyor":"Aktif görüşme süresi")+'</span><strong>'+esc(elapsed(c))+'</strong></div><div class="live-active-track"><i></i></div><button class="live-end-call" data-end-live-call="'+esc(c.call_id)+'">☎ Çağrıyı Kapat</button></article>'}).join("")+'</div>':'<div class="live-active-empty">Şu anda aktif telefon araması yok. Yeni arama geldiğinde burada anında görünecek.</div>';
+ $("liveActiveFeed").innerHTML=activeCalls.length?'<div class="live-active-grid">'+activeCalls.map(c=>{
+   const ringing=c.status==="ringing",held=Boolean(c.on_hold),phone=c.caller_phone||c.room_name||"Yeni gelen arama",state=ringing?"ÇALIYOR":held?"BEKLETİLİYOR":"GÖRÜŞMEDE",note=s.annotations[c.call_id]?.note||"";
+   return '<article class="live-active-card '+(ringing?"ringing":"")+'"><div class="live-active-top"><div class="live-active-caller"><span class="live-active-icon">'+(ringing?"↗":"☎")+'</span><div><strong>'+esc(c.caller_name||phone)+'</strong><small>'+esc(c.caller_phone||c.room_name||"Numara bekleniyor")+'</small></div></div><span class="live-active-badge">'+state+'</span></div><div class="live-active-meta"><span>'+(ringing?"Gelen arama · Yanıt bekliyor":held?"Aloha ses çıkışı beklemede":"Aktif görüşme süresi")+'</span><strong>'+esc(elapsed(c))+'</strong></div><div class="live-active-track"><i></i></div>'+(note?'<div class="live-call-note">Operatör notu: '+esc(note)+'</div>':'')+(held?'<div class="live-held-hint">Bekletme modu açık · Aloha ses kanalı susturuldu</div>':'')+'<div class="live-control-row"><button class="live-control-primary" data-live-control="'+(held?"resume":"hold")+'" data-call-id="'+esc(c.call_id)+'" '+(ringing?"disabled":"")+' title="Aloha sesini geçici susturur; bekletme müziği çalmaz">'+(held?"▶ Devam ettir":"Ⅱ Beklet")+'</button><button data-live-control="transfer" data-call-id="'+esc(c.call_id)+'" '+(ringing?"disabled":"")+' title="Arayanı başka telefon numarasına aktar">↗ Yönlendir</button><button data-live-control="note" data-call-id="'+esc(c.call_id)+'">＋ Not ekle</button><button class="live-end-call" data-end-live-call="'+esc(c.call_id)+'">☎ Çağrıyı Kapat</button></div></article>';
+ }).join("")+'</div>':'<div class="live-active-empty">Şu anda aktif telefon araması yok. Yeni arama geldiğinde burada anında görünecek.</div>';
+ $("liveActiveFeed").querySelectorAll("[data-live-control]").forEach(button=>button.onclick=async()=>{
+   const callId=button.dataset.callId,action=button.dataset.liveControl;
+   if(!callId||button.disabled)return;
+   if(action==="note"){
+     const current=s.annotations[callId]?.note||"",note=window.prompt("Bu görüşmeye eklenecek operatör notu:",current);
+     if(note===null)return;
+     button.disabled=true;
+     try{const result=await api("/api/call-annotations",{method:"POST",body:JSON.stringify({job_id:callId,note,priority:s.annotations[callId]?.priority||"normal"})});s.annotations[callId]=result.annotation;toast("Görüşme notu kaydedildi.");liveRender()}
+     catch(error){toast("Not kaydedilemedi: "+error.message);button.disabled=false}
+     return;
+   }
+   let destination="";
+   if(action==="transfer"){
+     destination=window.prompt("Aramanın aktarılacağı telefon numarasını girin. Örnek: +905xxxxxxxxx");
+     if(destination===null||!destination.trim())return;
+     if(!window.confirm(destination.trim()+" numarasına aktarım yapılsın mı?"))return;
+   }
+   button.disabled=true;const oldText=button.textContent;button.textContent=action==="transfer"?"Aktarılıyor…":action==="hold"?"Bekletiliyor…":"Devam ettiriliyor…";
+   try{
+     await api("/api/live-call-control",{method:"POST",body:JSON.stringify({callId,action,destination})});
+     toast(action==="transfer"?"Çağrı aktarımı başlatıldı.":action==="hold"?"Çağrı bekletmeye alındı.":"Çağrıya devam ediliyor.");
+     await refreshLive(true,false);
+   }catch(error){toast("Çağrı işlemi başarısız: "+error.message);button.disabled=false;button.textContent=oldText}
+ });
  $("liveActiveFeed").querySelectorAll("[data-end-live-call]").forEach(button=>button.onclick=async()=>{
    const callId=button.dataset.endLiveCall;
    if(!callId||button.disabled)return;
