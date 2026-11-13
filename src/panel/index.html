@@ -262,6 +262,10 @@ tbody tr:hover{background:#f8f9fb}
 .live-active-empty{padding:14px 15px;border:1px dashed #dfe5ed;border-radius:10px;color:#8a95a5;font-size:10px;background:#fbfcfe}
 @media(max-width:700px){.live-active-feed{padding:11px 12px 0}.live-active-grid{grid-template-columns:1fr}.live-active-card{padding:12px}}
 
+
+.live-end-call{justify-self:end;border:1px solid #f1caca;background:#fff4f4;color:#c43d3d;border-radius:7px;padding:7px 11px;font-size:10px;font-weight:750;display:inline-flex;align-items:center;gap:6px}
+.live-end-call:hover{background:#ffe8e8}
+.live-end-call:disabled{opacity:.55;cursor:wait}
 </style></head><body><div class="app">
 <aside class="sidebar" id="sidebar"><div class="logo">aloha<span>.</span><small>OPERASYON</small></div>
 <div class="nav-caption">OPERASYON</div><nav class="nav">
@@ -599,7 +603,16 @@ function liveRender(){
  $("liveActiveCaption").textContent=ringingCalls.length+" çalıyor · "+connectedCalls.length+" görüşmede";
  $("liveSessionState").textContent=activeCalls.length?ringingCalls.length+" çalıyor · "+connectedCalls.length+" görüşmede":(s.liveWebhook?"Şu anda aktif arama yok":"LiveKit webhook olayı bekleniyor");const lkState=$("liveKitSourceState");if(lkState){lkState.className=s.liveWebhook?"source-state":"source-state pending";lkState.textContent=s.liveWebhook?"Olay alındı · "+date(s.liveWebhook.last_seen_at):"Webhook bekleniyor";}
  $("liveTodayCalls").textContent=todayCalls.length;$("liveOpenOrders").textContent=openOrders.length;$("liveFollowups").textContent=followups.length;
- $("liveActiveFeed").innerHTML=activeCalls.length?'<div class="live-active-grid">'+activeCalls.map(c=>{const ringing=c.status==="ringing",phone=c.caller_phone||c.room_name||"Yeni gelen arama",state=ringing?"ÇALIYOR":"GÖRÜŞMEDE";return '<article class="live-active-card '+(ringing?"ringing":"")+'"><div class="live-active-top"><div class="live-active-caller"><span class="live-active-icon">'+(ringing?"↗":"☎")+'</span><div><strong>'+esc(c.caller_name||phone)+'</strong><small>'+esc(c.caller_phone||c.room_name||"Numara bekleniyor")+'</small></div></div><span class="live-active-badge">'+state+'</span></div><div class="live-active-meta"><span>'+(ringing?"Gelen arama · Yanıt bekleniyor":"Aktif görüşme süresi")+'</span><strong>'+esc(elapsed(c))+'</strong></div><div class="live-active-track"><i></i></div></article>'}).join("")+'</div>':'<div class="live-active-empty">Şu anda aktif telefon araması yok. Yeni arama geldiğinde burada anında görünecek.</div>';
+ $("liveActiveFeed").innerHTML=activeCalls.length?'<div class="live-active-grid">'+activeCalls.map(c=>{const ringing=c.status==="ringing",phone=c.caller_phone||c.room_name||"Yeni gelen arama",state=ringing?"ÇALIYOR":"GÖRÜŞMEDE";return '<article class="live-active-card '+(ringing?"ringing":"")+'"><div class="live-active-top"><div class="live-active-caller"><span class="live-active-icon">'+(ringing?"↗":"☎")+'</span><div><strong>'+esc(c.caller_name||phone)+'</strong><small>'+esc(c.caller_phone||c.room_name||"Numara bekleniyor")+'</small></div></div><span class="live-active-badge">'+state+'</span></div><div class="live-active-meta"><span>'+(ringing?"Gelen arama · Yanıt bekliyor":"Aktif görüşme süresi")+'</span><strong>'+esc(elapsed(c))+'</strong></div><div class="live-active-track"><i></i></div><button class="live-end-call" data-end-live-call="'+esc(c.call_id)+'">☎ Çağrıyı Kapat</button></article>'}).join("")+'</div>':'<div class="live-active-empty">Şu anda aktif telefon araması yok. Yeni arama geldiğinde burada anında görünecek.</div>';
+ $("liveActiveFeed").querySelectorAll("[data-end-live-call]").forEach(button=>button.onclick=async()=>{
+   const callId=button.dataset.endLiveCall;
+   if(!callId||button.disabled)return;
+   if(!window.confirm("Bu telefon görüşmesini gerçekten kapatmak istiyor musunuz?"))return;
+   button.disabled=true;button.textContent="Kapatılıyor…";
+   try{await api("/api/live-call-end",{method:"POST",body:JSON.stringify({callId})});toast("Çağrı sonlandırıldı.");await refreshLive(true,false)}
+   catch(error){toast("Çağrı kapatılamadı: "+error.message);button.disabled=false;button.textContent="☎ Çağrıyı Kapat"}
+ });
+
  const calls=[...s.calls].sort((a,b)=>Date.parse(liveWhen(b)||0)-Date.parse(liveWhen(a)||0));
  const q=($("liveSearch")?.value||"").toLocaleLowerCase("tr-TR");
  const visible=calls.filter(c=>{const business=liveBusinessMatch(c);const matches=liveFilter==="all"||liveFilter==="customer"&&!business||liveFilter==="business"&&business;return matches&&[c.caller_phone,c.room_name,c.job_id,c.customer_name,c.summary,c.intent].join(" ").toLocaleLowerCase("tr-TR").includes(q)});
