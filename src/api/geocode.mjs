@@ -8,12 +8,12 @@ function safeEqual(expected, supplied) {
 }
 function authorized(req) {
   const h = String(req.headers.authorization || "");
-  const bearer = h.match(/^Bearer\\s+(.+)$/i)?.[1] || "";
+  const bearer = h.match(/^Bearer\s+(.+)$/i)?.[1] || "";
   return safeEqual(process.env.ALOHA_PANEL_KEY, req.headers["x-panel-key"]) ||
     safeEqual(process.env.ALOHA_AGENT_API_KEY, req.headers["x-aloha-agent-key"]) ||
     safeEqual(process.env.LIVEKIT_WEBHOOK_SECRET, bearer);
 }
-const clean = (v, max = 500) => String(v ?? "").trim().replace(/\\s+/g, " ").slice(0, max);
+const clean = (v, max = 500) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, max);
 
 async function googleJson(url) {
   const response = await fetch(url, {
@@ -56,10 +56,20 @@ export default async function handler(req, res) {
     url.searchParams.set("key", apiKey);
     const payload = await googleJson(url);
     if (payload.status !== "OK" || !payload.results?.length) {
+      const status = String(payload.status || "UNKNOWN");
+      const googleMessage = String(payload.error_message || "");
+      const message = status === "ZERO_RESULTS"
+        ? "Google bu adres için konum bulamadı. Mahalle veya cadde adıyla tekrar dene."
+        : status === "REQUEST_DENIED"
+          ? "Google Geocoding API isteği reddedildi. Google Cloud Console'da Geocoding API ve API anahtarı kısıtlamalarını kontrol et."
+          : status === "OVER_QUERY_LIMIT"
+            ? "Google Geocoding API kullanım kotası aşıldı."
+            : "Google adres araması başarısız: " + status;
       return res.status(200).json({
         ok: true, matched: false, provider: "Google Maps Platform Geocoding API",
-        results: [], best_match: null, error: "address_not_found",
-        message: "Adres Google Haritalar üzerinde bulunamadı. İlçe, mahalle veya cadde bilgisini netleştir."
+        google_status: status, google_error: googleMessage.slice(0, 300),
+        results: [], best_match: null, error: "google_geocoding_" + status.toLowerCase(),
+        message
       });
     }
     const results = payload.results.slice(0, 5).map(item => ({
