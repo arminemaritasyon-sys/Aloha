@@ -4,6 +4,6 @@
   "type": "module",
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
-    "@livekit/server-sdk": "^2.13.3"
+    "livekit-server-sdk": "^2.13.3"
   }
 }
