@@ -11,79 +11,39 @@ function authorized(req) {
   const panelKey = String(req.headers["x-panel-key"] || "").trim();
   const agentKey = String(req.headers["x-aloha-agent-key"] || "").trim();
   const auth = String(req.headers.authorization || "");
-  const bearer = auth.match(/^Bearer\s+(.+)$/i)?.[1] || "";
+  const bearer = auth.match(/^Bearer\\s+(.+)$/i)?.[1] || "";
   return safeEqual(process.env.ALOHA_PANEL_KEY, panelKey) ||
     safeEqual(process.env.ALOHA_AGENT_API_KEY, agentKey) ||
     safeEqual(process.env.LIVEKIT_WEBHOOK_SECRET, bearer);
 }
 
-const clean = (value, max = 120) => String(value ?? "").trim().slice(0, max);
-const number = (value) => Number.isFinite(Number(value)) ? Number(value) : NaN;
-
-function distanceMeters(aLat, aLon, bLat, bLon) {
-  const rad = (n) => n * Math.PI / 180;
-  const dLat = rad(bLat - aLat);
-  const dLon = rad(bLon - aLon);
+const clean = (value, max = 300) => String(value ?? "").trim().slice(0, max);
+const distanceMeters = (a, b) => {
+  const rad = n => n * Math.PI / 180;
+  const dLat = rad(b.latitude - a.latitude);
+  const dLon = rad(b.longitude - a.longitude);
   const x = Math.sin(dLat / 2) ** 2 +
-    Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLon / 2) ** 2;
-  return 6371000 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-}
+    Math.cos(rad(a.latitude)) * Math.cos(rad(b.latitude)) * Math.sin(dLon / 2) ** 2;
+  return Math.round(6371000 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)));
+};
 
-function classify(tags = {}) {
-  const value = tags.cuisine || tags.amenity || tags.shop || "business";
-  const cuisine = String(tags.cuisine || "").toLowerCase();
-  if (cuisine.includes("kebab") || cuisine.includes("doner") || cuisine.includes("shawarma")) return "Döner / kebap";
-  if (tags.amenity === "fast_food") return "Fast food";
-  if (tags.amenity === "restaurant") return "Restoran";
-  if (tags.amenity === "cafe") return "Kafe";
-  return value;
-}
-
-function mapElement(element, origin) {
-  const tags = element.tags || {};
-  const lat = Number(element.lat ?? element.center?.lat);
-  const lon = Number(element.lon ?? element.center?.lon);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  const name = clean(tags.name || tags.brand || tags.operator, 180);
-  if (!name) return null;
-
-  const delivery = tags.delivery === "yes" ? "tag_confirmed" :
-    tags.delivery === "no" ? "not_available_by_tag" : "unknown";
-  const hours = clean(tags.opening_hours, 240) || null;
-
-  return {
-    osm_type: element.type,
-    osm_id: element.id,
-    name,
-    category: classify(tags),
-    phone: clean(tags.phone || tags["contact:phone"], 60) || null,
-    address: [
-      tags["addr:street"],
-      tags["addr:housenumber"],
-      tags["addr:suburb"] || tags["addr:neighbourhood"],
-      tags["addr:city"] || tags["addr:town"]
-    ].filter(Boolean).join(", ") || null,
-    latitude: lat,
-    longitude: lon,
-    straight_line_distance_m: Math.round(distanceMeters(origin.lat, origin.lon, lat, lon)),
-    opening_hours: hours,
-    open_status: "unknown",
-    delivery_status: delivery,
-    takeaway_status: tags.takeaway === "yes" ? "tag_confirmed" : "unknown",
-    cuisine: clean(tags.cuisine, 160) || null,
-    website: clean(tags.website || tags["contact:website"], 300) || null,
-    maps_url: `https://www.openstreetmap.org/${element.type}/${element.id}`
-  };
+async function googleJson(url, options = {}) {
+  const response = await fetch(url, { ...options, signal: AbortSignal.timeout(15000) });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error?.message || `google_http_${response.status}`);
+  return payload;
 }
 
 export default async function handler(req, res) {
-  res.setHeader("Cache-Control", "private, max-age=60");
+  res.setHeader("Cache-Control", "private, no-store");
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      service: "aloha-open-business-search",
-      requires: ["latitude", "longitude"],
-      attribution: "© OpenStreetMap contributors"
+      service: "aloha-google-local-search",
+      provider: "Google Maps Platform Places API (New)",
+      accepts: "POST",
+      requiredEnvironment: "GOOGLE_MAPS_API_KEY",
+      input: { address: "string", query: "free text", open_now: "boolean (optional)", radius_m: "number (optional)" }
     });
   }
   if (req.method !== "POST") {
@@ -92,75 +52,136 @@ export default async function handler(req, res) {
   }
   if (!authorized(req)) return res.status(401).json({ ok: false, error: "unauthorized" });
 
+  const apiKey = clean(process.env.GOOGLE_MAPS_API_KEY, 300);
+  if (!apiKey) return res.status(503).json({
+    ok: false,
+    error: "google_maps_api_key_missing",
+    message: "Vercel ortam değişkenlerine GOOGLE_MAPS_API_KEY eklenmeli."
+  });
+
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
-    const lat = number(body.latitude);
-    const lon = number(body.longitude);
-    const radius = Math.max(300, Math.min(5000, Math.round(number(body.radius_m) || 2500)));
-    const category = clean(body.category || "all", 30).toLowerCase();
-    if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      return res.status(400).json({ ok: false, error: "valid_coordinates_required" });
+    const address = clean(body.address, 500);
+    const query = clean(body.query || body.search_query || body.category, 180);
+    const openNow = body.open_now === true || body.openNow === true;
+    const radius = Math.max(300, Math.min(50000, Number(body.radius_m) || 5000));
+    let origin = null;
+    let resolvedAddress = null;
+
+    if (Number.isFinite(Number(body.latitude)) && Number.isFinite(Number(body.longitude))) {
+      origin = { latitude: Number(body.latitude), longitude: Number(body.longitude) };
+      if (origin.latitude < -90 || origin.latitude > 90 || origin.longitude < -180 || origin.longitude > 180) {
+        return res.status(400).json({ ok: false, error: "invalid_coordinates" });
+      }
+      resolvedAddress = address || null;
+    } else {
+      if (address.length < 5) return res.status(400).json({
+        ok: false, error: "address_required",
+        message: "Müşterinin söylediği açık adres veya mahalle/ilçe bilgisi gerekli."
+      });
+      const geocodeUrl = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+      geocodeUrl.searchParams.set("address", address);
+      geocodeUrl.searchParams.set("region", "tr");
+      geocodeUrl.searchParams.set("language", "tr");
+      geocodeUrl.searchParams.set("key", apiKey);
+      const geocode = await googleJson(geocodeUrl);
+      if (geocode.status !== "OK" || !geocode.results?.length) {
+        return res.status(200).json({
+          ok: true, matched: false, businesses: [],
+          message: "Adres Google Haritalar üzerinde doğrulanamadı. Müşteriden mahalle, ilçe veya cadde bilgisini netleştirmesini iste."
+        });
+      }
+      const best = geocode.results[0];
+      origin = {
+        latitude: Number(best.geometry.location.lat),
+        longitude: Number(best.geometry.location.lng)
+      };
+      resolvedAddress = best.formatted_address || address;
     }
 
-    const foodTypes = ['node["amenity"~"^(restaurant|fast_food)$"]', 'way["amenity"~"^(restaurant|fast_food)$"]', 'relation["amenity"~"^(restaurant|fast_food)$"]'];
-    const filters = category === "cafe"
-      ? ['node["amenity"="cafe"]', 'way["amenity"="cafe"]', 'relation["amenity"="cafe"]']
-      : category === "doner"
-        ? ['node["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kebab|doner|shawarma",i]', 'way["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kebab|doner|shawarma",i]', 'relation["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kebab|doner|shawarma",i]']
-        : category === "kofte"
-          ? [
-              'node["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kofte|köfte|meat|grill|turkish",i]',
-              'way["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kofte|köfte|meat|grill|turkish",i]',
-              'relation["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"kofte|köfte|meat|grill|turkish",i]',
-              'node["amenity"~"^(restaurant|fast_food)$"]["name"~"köfte|kofte|köfteci|kofteci",i]',
-              'way["amenity"~"^(restaurant|fast_food)$"]["name"~"köfte|kofte|köfteci|kofteci",i]',
-              'relation["amenity"~"^(restaurant|fast_food)$"]["name"~"köfte|kofte|köfteci|kofteci",i]'
-            ]
-          : foodTypes;
-
-    const query = `[out:json][timeout:20];( ${filters.map((filter) => `${filter}(around:${radius},${lat},${lon});`).join(" ")} );out center tags;`;
-    const endpoint = clean(process.env.OVERPASS_API_URL || "https://overpass-api.de/api/interpreter", 300);
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "User-Agent": `AlohaOrderAssistant/1.0 (${clean(process.env.ALOHA_CONTACT_EMAIL, 120) || "contact-configure-in-vercel"})`
-      },
-      body: new URLSearchParams({ data: query }),
-      signal: AbortSignal.timeout(25000)
+    if (!query) return res.status(400).json({
+      ok: false, error: "search_query_required",
+      message: "Müşterinin istediği işletme veya hizmeti doğal dille belirt."
     });
 
-    if (!response.ok) {
-      return res.status(response.status === 429 ? 503 : 502).json({
-        ok: false,
-        error: response.status === 429 ? "business_search_rate_limited" : "business_search_provider_unavailable"
-      });
-    }
+    const places = await googleJson("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": [
+          "places.id",
+          "places.displayName",
+          "places.formattedAddress",
+          "places.location",
+          "places.nationalPhoneNumber",
+          "places.rating",
+          "places.userRatingCount",
+          "places.currentOpeningHours",
+          "places.googleMapsUri",
+          "places.businessStatus"
+        ].join(",")
+      },
+      body: JSON.stringify({
+        textQuery: query,
+        languageCode: "tr",
+        regionCode: "TR",
+        pageSize: 10,
+        rankPreference: "DISTANCE",
+        openNow,
+        locationBias: {
+          circle: {
+            center: origin,
+            radius
+          }
+        }
+      })
+    });
 
-    const payload = await response.json();
-    const businesses = (payload.elements || [])
-      .map((element) => mapElement(element, { lat, lon }))
-      .filter(Boolean)
-      .sort((a, b) => a.straight_line_distance_m - b.straight_line_distance_m)
-      .slice(0, 30);
+    const businesses = (places.places || []).map(place => {
+      const location = place.location || {};
+      const point = {
+        latitude: Number(location.latitude),
+        longitude: Number(location.longitude)
+      };
+      const validPoint = Number.isFinite(point.latitude) && Number.isFinite(point.longitude);
+      return {
+        id: place.id || null,
+        name: place.displayName?.text || "İsimsiz işletme",
+        address: place.formattedAddress || null,
+        phone: place.nationalPhoneNumber || null,
+        rating: Number.isFinite(place.rating) ? place.rating : null,
+        user_rating_count: Number.isFinite(place.userRatingCount) ? place.userRatingCount : null,
+        open_now: typeof place.currentOpeningHours?.openNow === "boolean"
+          ? place.currentOpeningHours.openNow : null,
+        business_status: place.businessStatus || null,
+        distance_m: validPoint ? distanceMeters(origin, point) : null,
+        latitude: validPoint ? point.latitude : null,
+        longitude: validPoint ? point.longitude : null,
+        maps_url: place.googleMapsUri || null
+      };
+    }).sort((a, b) => (a.distance_m ?? Number.MAX_SAFE_INTEGER) - (b.distance_m ?? Number.MAX_SAFE_INTEGER));
 
     return res.status(200).json({
       ok: true,
-      provider: "OpenStreetMap / Overpass API",
-      attribution: "© OpenStreetMap contributors",
-      origin: { latitude: lat, longitude: lon },
+      provider: "Google Maps Platform Places API (New)",
+      origin,
+      resolved_address: resolvedAddress,
+      query,
+      open_now_filter: openNow,
       radius_m: radius,
-      distance_method: "straight_line_estimate",
       businesses,
       warnings: [
-        "Harita verileri eksik veya güncel olmayabilir.",
-        "Açık olma durumu doğrulanmadı; opening_hours bilgisi tek başına canlı açık bilgisi değildir.",
-        "Paket servis durumu yalnızca OSM kaydında delivery=yes ise etiketle doğrulanmış sayılır; aksi halde işletmeden teyit edilmelidir.",
-        "Mesafeler kuş uçuşudur; yol mesafesi değildir."
+        "Açık olma bilgisi Google kaydında mevcutsa döndürülür; saat bilgisi olmayan işletmeler açık olarak varsayılmaz.",
+        "Mesafe kuş uçuşu tahmindir; araç/yürüme mesafesi değildir."
       ]
     });
   } catch (error) {
-    console.error("aloha_business_search_error", { message: error?.message || String(error) });
-    return res.status(502).json({ ok: false, error: "business_search_failed" });
+    console.error("aloha_google_local_search_error", { message: error?.message || String(error) });
+    return res.status(502).json({
+      ok: false,
+      error: "google_local_search_failed",
+      message: "Google işletme arama servisine şu anda ulaşılamıyor."
+    });
   }
 }
