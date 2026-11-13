@@ -344,7 +344,7 @@ const $=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,
 const savedKey=localStorage.getItem("aloha_panel_key")||sessionStorage.getItem("aloha_panel_key")||"";
 if(savedKey)localStorage.setItem("aloha_panel_key",savedKey);
 const s={key:savedKey,calls:[],orders:[],histories:[],annotations:{},workspace:[]};
-const names={dashboard:"Genel Bakış",live:"Canlı İzle",calls:"Görüşmeler",orders:"Siparişler",operations:"Operasyon",journey:"Müşteri Yolculuğu",brands:"Firmalar & Markalar",customers:"Müşteriler",tasks:"Görev ve İş Takibi",businesses:"İşletme Rehberi",products:"Ürün Kataloğu",followups:"Geri Aramalar",reports:"Raporlar",settings:"Ayarlar"};
+const names={dashboard:"Genel Bakış",live:"Canlı İzle",calls:"Görüşmeler",orders:"Siparişler",operations:"Operasyon",journey:"Müşteri Yolculuğu",brands:"Firmalar & Markalar",customers:"Müşteriler",tasks:"Görev ve İş Takibi",businesses:"İşletme Rehberi",products:"Ürün Kataloğu",followups:"Geri Aramalar",reports:"Raporlar",intelligence:"İş Zekâsı",settings:"Ayarlar"};
 const labels={pending:"Onay bekliyor",confirmed:"Onaylandı",sent_to_business:"İşletmeye iletildi",preparing:"Hazırlanıyor",courier_picked_up:"Kurye teslim aldı",on_the_way:"Yolda",delivered:"Teslim edildi",completed:"Tamamlandı",cancelled:"İptal",rejected:"Reddedildi"};
 const date=v=>v?new Date(v).toLocaleString("tr-TR"):"—",sec=v=>Math.max(0,Number(v)||0),dur=v=>{v=sec(v);return v>=3600?Math.floor(v/3600)+" sa "+Math.floor(v%3600/60)+" dk":v>=60?Math.floor(v/60)+" dk "+v%60+" sn":v+" sn"};
 const toast=t=>{$("toast").textContent=t;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2500)};
@@ -468,7 +468,7 @@ if($("connect"))$("connect").onclick=connect;$("refreshAll").onclick=connect;$("
 function filterCalls(){const q=$("callSearch").value.toLocaleLowerCase("tr-TR"),f=$("callAudioFilter").value,pf=$("callPriorityFilter").value;const arr=s.calls.filter(c=>{const a=s.annotations[c.job_id]||{},p=a.priority||"normal";return [c.caller_phone,c.room_name,c.job_id,c.summary,c.transcript,a.note].join(" ").toLocaleLowerCase("tr-TR").includes(q)&&(f==="all"||(f==="audio"?!!(c.audio_url||c.room_id):!(c.audio_url||c.room_id)))&&(pf==="all"||p===pf)});renderCallRows("callsTable",arr)}
 $("callSearch").oninput=filterCalls;$("callAudioFilter").onchange=filterCalls;$("callPriorityFilter").onchange=filterCalls;
 $("exportCsv").onclick=()=>{const rows=[["Sipariş No","Müşteri","Telefon","Ürün","Adet","Durum","Tarih"],...s.orders.map(o=>[o.order_number,o.customer_name,o.phone,o.product,o.quantity,labels[o.status],date(o.created_at)])];const csv="\uFEFF"+rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="aloha-siparis-raporu.csv";a.click();URL.revokeObjectURL(a.href)};
-$("globalSearch").onkeydown=e=>{if(e.key==="Enter"){const q=e.target.value;go("calls");$("callSearch").value=q;filterCalls()}};
+// Üst menü araması kaldırıldı; artık DOM üzerinde olmayan globalSearch alanına erişilmiyor.
 $("menuToggle").onclick=()=>$("sidebar").classList.toggle("open");
 const initial=location.hash.slice(1);if(names[initial])go(initial);
 if(s.key){connect()}else{connect()}
