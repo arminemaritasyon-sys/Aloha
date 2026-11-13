@@ -30,7 +30,7 @@ Başarılı yanıt `best_match.latitude`, `best_match.longitude`, `best_match.la
   - `latitude` — number, required. Geocode sonucundaki en iyi eşleşmenin enlemi.
   - `longitude` — number, required. Geocode sonucundaki en iyi eşleşmenin boylamı.
   - `radius_m` — integer, optional, default 2500, min 300, max 5000.
-  - `category` — string, optional; `all`, `doner`, `cafe`.
+  - `category` — string, optional; `all`, `doner`, `cafe`, `kofte`.
 
 Sonuçları kuş uçuşu mesafeye göre sıralar. `open_status` şu an için `unknown`; işletmenin açık olduğunu varsayma. `delivery_status` sadece OSM kaydında `delivery=yes` varsa etiketle doğrulanmış olur. Diğer durumlarda paket servisi işletmeden teyit edilmeden müşteriye söz verme. Telefon veya saat bilgisi eksik olabilir. Sonuç yoksa adresi/radyusu düzelt veya müşteriye alternatif sor.
 
@@ -59,6 +59,24 @@ Sonuçları kuş uçuşu mesafeye göre sıralar. `open_status` şu an için `un
   - `confirmation_text` — string, optional. Müşterinin onay cümlesi.
 
 API, agent çağrısında `confirmed` true değilse 409 döndürür. Agent siparişleri `confirmed` durumunda kaydedilir. Panelden manuel girilen siparişler eski davranışla `pending` kalır.
+
+## Görüşme sırasında canlı işletme keşfi (sipariş gerektirmez)
+
+Müşteri "yakınımda köfteci var mı?", "şu an açık bir restoran bul" veya benzeri bir yerel işletme sorusu sorduğunda bu akışı sipariş alma şartı aramadan başlat:
+
+1. Müşterinin söylediği adresi veya tarif ettiği konumu al. Telefon numarasından GPS konumu çıkarmaya çalışma.
+2. Adres eksikse yalnızca gerekli mahalle/ilçe/cadde bilgisini sor.
+3. `geocode_customer_address` aracını POST ile çağır; `address` alanına müşterinin söylediği adresi gönder.
+4. `matched=false` ise koordinat üretme; adresi netleştir. Eşleşme varsa ilçe/mahalle bilgisini müşteriye okuyup konumu teyit et.
+5. `find_nearby_food_businesses` aracını POST ile çağır. Köfteci için `category=kofte`, döner için `category=doner`, genel restoran için `category=all` kullan. Varsayılan yarıçap 2500 metredir; müşteri isterse 5000 metreye kadar genişlet.
+6. Dönen işletmeleri mesafeye göre değerlendir; isim, kategori, adres ve telefon bilgisi mevcutsa kullan. En fazla 3-5 uygun sonucu kısa ve doğal biçimde sesli sun.
+7. `open_status=unknown` ise işletmenin açık olduğunu iddia etme. `opening_hours` alanı varsa "çalışma saati bilgisi var, ancak şu an açık olduğunu canlı doğrulayamıyorum" de. Telefon numarası varsa müşteriye teyit için arayabileceğini söyle; kendin arama başlatma.
+8. Sonuç yoksa yarıçapı genişletmeyi veya farklı kategori/mahalle denemeyi teklif et. Uydurma işletme, telefon, fiyat, yol mesafesi ya da açık olma bilgisi verme.
+
+Örnek konuşma:
+- Müşteri: "Kepez'de verdiğim adrese yakın köfteci var mı?"
+- Aloha: "Hemen çevrenize bakıyorum. Önce adresinizi haritada doğrulayayım."
+- Aloha, adresi doğruladıktan sonra köfteci arama aracını çağırır ve bulunan gerçek sonuçları mesafeleriyle sesli aktarır.
 
 ## Aloha'nın konuşma sırası (talimatlara ekle)
 
