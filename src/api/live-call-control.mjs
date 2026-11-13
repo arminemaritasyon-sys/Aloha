@@ -85,8 +85,15 @@ export default async function handler(req, res) {
 
     if (action === "hold") {
       const agents = participants.filter(p => p.identity !== sipParticipant.identity);
-      const targets = agents.flatMap(p => audioTracks(p).map(t => ({ identity: p.identity, trackSid: t.sid })));
+      const targets = agents.flatMap(p => audioTracks(p).filter(t => !t.muted).map(t => ({ identity: p.identity, trackSid: t.sid })));
       if (!targets.length) return res.status(409).json({ ok: false, error: "agent_audio_track_not_found", detail: "Aloha ses kanalı bulunamadı; çağrı beklemeye alınmadı." });
+      // Verify that this LiveKit project permits server-side remote unmute before muting anything.
+      // LiveKit disables remote unmute by default; without this preflight a call could get stuck muted.
+      try {
+        for (const track of targets) await rooms.mutePublishedTrack(roomName, track.identity, track.trackSid, false);
+      } catch {
+        return res.status(409).json({ ok: false, error: "remote_unmute_not_enabled", detail: "LiveKit projesinde remote unmute kapalı. Güvenli bekletme için LiveKit sunucu ayarında enable_remote_unmute etkin olmalı." });
+      }
       const done = [];
       try {
         for (const track of targets) {
