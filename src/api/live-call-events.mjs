@@ -60,9 +60,19 @@ function mapEvent(event) {
     participant.phoneNumber, participant.phone_number
   );
   const callStatus = String(first(attrs["sip.callStatus"], attrs["sip.call_status"], "")).toLowerCase();
-  if (callStatus === "ringing" && eventName !== "participant_left") status = "ringing";
-  if (callStatus === "active") status = "in_progress";
-  if (callStatus === "hangup") status = "completed";
+  // Terminal LiveKit events always win over stale SIP participant attributes.
+  // A participant_left event can still carry sip.callStatus="active".
+  if (["participant_left", "room_finished"].includes(eventName)) {
+    status = "completed";
+  } else if (eventName === "participant_connection_aborted") {
+    status = "missed";
+  } else if (callStatus === "hangup") {
+    status = "completed";
+  } else if (callStatus === "active") {
+    status = "in_progress";
+  } else if (callStatus === "ringing") {
+    status = "ringing";
+  }
   const at = eventTime(event);
   return {
     callId: roomId,
@@ -131,7 +141,11 @@ export default async function handler(req, res) {
         caller_phone = COALESCE(NULLIF(EXCLUDED.caller_phone, ''), aloha_live_calls.caller_phone),
         caller_name = COALESCE(NULLIF(EXCLUDED.caller_name, ''), aloha_live_calls.caller_name),
         direction = COALESCE(NULLIF(EXCLUDED.direction, ''), aloha_live_calls.direction),
-        status = CASE WHEN EXCLUDED.last_event_at >= COALESCE(aloha_live_calls.last_event_at, 'epoch'::timestamptz) THEN EXCLUDED.status ELSE aloha_live_calls.status END,
+        status = CASE
+          WHEN aloha_live_calls.status IN ('completed','missed') THEN aloha_live_calls.status
+          WHEN EXCLUDED.last_event_at >= COALESCE(aloha_live_calls.last_event_at, 'epoch'::timestamptz) THEN EXCLUDED.status
+          ELSE aloha_live_calls.status
+        END,
         started_at = COALESCE(aloha_live_calls.started_at, EXCLUDED.started_at),
         answered_at = COALESCE(aloha_live_calls.answered_at, EXCLUDED.answered_at),
         ended_at = COALESCE(EXCLUDED.ended_at, aloha_live_calls.ended_at),
