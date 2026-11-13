@@ -519,27 +519,27 @@ function renderWorkspace(type){const list=document.querySelector('[data-workspac
 async function loadWorkspace(){const d=await api("/api/workspace");s.workspace=d.items||[];["task","business","product","followup","journey"].forEach(renderWorkspace);renderBrands();renderIntelligence();return s.workspace}
 
 /* Akıllı İşletme Bul: Google Geocoding -> Google Places -> save to workspace */
-let finderResults=[];
+let finderResults=[],finderQuery="";
 function renderFinderResults(){
  const root=$("finderResults");
  $("finderCount").textContent=String(finderResults.length);
  $("finderCallable").textContent=String(finderResults.filter(x=>x.phone).length);
  $("finderResultsCaption").textContent=finderResults.length?finderResults.length+" işletme bulundu · "+finderResults.filter(x=>x.phone).length+" telefon numarası mevcut":"Sonuç bulunamadı";
  if(!finderResults.length){root.innerHTML='<div class="finder-empty">Bu konumda eşleşen işletme bulunamadı. Yarıçapı artırıp yeniden deneyebilirsin.</div>';return}
- root.innerHTML=finderResults.map((b,i)=>'<article class="finder-result"><div class="finder-result-main"><div class="finder-result-title"><b>'+esc(b.name)+'</b><span class="status '+(b.phone?'green':'amber')+'">'+(b.phone?'Telefon mevcut':'Telefon bulunamadı')+'</span></div><div class="finder-result-meta"><span>'+esc(category||"İşletme")+'</span><span>'+esc(b.address||"Adres kaydı yok")+'</span><span>'+esc(b.distance_m>=1000?(b.distance_m/1000).toFixed(1)+" km":b.distance_m+" m")+' · kuş uçuşu</span>'+(b.open_now===true?'<span>Şu an açık</span>':b.open_now===false?'<span>Şu an kapalı</span>':'<span>Açıklık bilgisi yok</span>')+'</div></div><div class="finder-result-actions">'+(b.phone?'<a href="tel:'+esc(b.phone)+'">Telefonu gör</a>':'')+'<a href="'+esc(b.maps_url)+'" target="_blank" rel="noopener">Haritada aç</a><button class="finder-save" type="button" data-finder-save="'+i+'">Rehbere kaydet</button></div></article>').join("");
+ root.innerHTML=finderResults.map((b,i)=>'<article class="finder-result"><div class="finder-result-main"><div class="finder-result-title"><b>'+esc(b.name)+'</b><span class="status '+(b.phone?'green':'amber')+'">'+(b.phone?'Telefon mevcut':'Telefon bulunamadı')+'</span></div><div class="finder-result-meta"><span>'+esc(finderQuery||"İşletme")+'</span><span>'+esc(b.address||"Adres kaydı yok")+'</span><span>'+esc(Number.isFinite(Number(b.distance_m))?(Number(b.distance_m)>=1000?(Number(b.distance_m)/1000).toFixed(1)+" km":Number(b.distance_m)+" m"):"Mesafe bilgisi yok")+' · kuş uçuşu</span>'+(b.open_now===true?'<span>Şu an açık</span>':b.open_now===false?'<span>Şu an kapalı</span>':'<span>Açıklık bilgisi yok</span>')+'</div></div><div class="finder-result-actions">'+(b.phone?'<a href="tel:'+esc(b.phone)+'">Telefonu gör</a>':'')+'<a href="'+esc(b.maps_url)+'" target="_blank" rel="noopener">Haritada aç</a><button class="finder-save" type="button" data-finder-save="'+i+'">Rehbere kaydet</button></div></article>').join("");
  root.querySelectorAll("[data-finder-save]").forEach(btn=>btn.onclick=async()=>{
   const b=finderResults[Number(btn.dataset.finderSave)];if(!b)return;
   btn.disabled=true;btn.textContent="Kaydediliyor…";
   try{
    const duplicate=s.workspace.some(x=>x.type==="business"&&String(x.data?.google_place_id||"")===String(b.id));
    if(duplicate){btn.textContent="Zaten kayıtlı";toast("Bu işletme rehberde zaten kayıtlı.");return}
-   await api("/api/workspace",{method:"POST",body:JSON.stringify({type:"business",title:b.name,status:"open",data:{phone:b.phone,category:category,address:b.address,latitude:b.latitude,longitude:b.longitude,source:"Google Maps",google_place_id:b.id,rating:b.rating,user_rating_count:b.user_rating_count,open_now:b.open_now,business_status:b.business_status,maps_url:b.maps_url,call_status:"not_started"}})});
+   await api("/api/workspace",{method:"POST",body:JSON.stringify({type:"business",title:b.name,status:"open",data:{phone:b.phone,category:finderQuery,address:b.address,latitude:b.latitude,longitude:b.longitude,source:"Google Maps",google_place_id:b.id,rating:b.rating,user_rating_count:b.user_rating_count,open_now:b.open_now,business_status:b.business_status,maps_url:b.maps_url,call_status:"not_started"}})});
    await loadWorkspace();btn.textContent="Kaydedildi";toast("İşletme rehberine kaydedildi.");
   }catch(e){btn.disabled=false;btn.textContent="Rehbere kaydet";toast(e.message)}
  });
 }
 $("businessFinderForm")?.addEventListener("submit",async e=>{
- e.preventDefault();const submit=$("finderSubmit"),address=$("finderAddress").value.trim(),category=$("finderCategory").value,radius=Number($("finderRadius").value);
+ e.preventDefault();const submit=$("finderSubmit"),address=$("finderAddress").value.trim(),category=$("finderCategory").value.trim(),radius=Number($("finderRadius").value);finderQuery=category;
  submit.disabled=true;submit.textContent="Adres aranıyor…";$("finderState").textContent="Adres aranıyor";$("finderAddressState").textContent="Kontrol ediliyor";finderResults=[];renderFinderResults();
  try{
   const geo=await api("/api/geocode",{method:"POST",body:JSON.stringify({address})});
