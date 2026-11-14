@@ -644,7 +644,7 @@ $("businessDiscoveryForm")?.addEventListener("submit",async event=>{
  const button=$("discoverySubmit");button.disabled=true;button.textContent="Google'dan işletmeler alınıyor…";
  $("discoveryState").textContent="Google aranıyor";$("discoverySaved").textContent="0";discoveryBusinesses=[];renderDiscoveryResults();
  try{
-  const found=await api("/api/business-discover",{method:"POST",body:JSON.stringify({province:province.name,district})});
+  const found=await api("/api/business-search",{method:"POST",body:JSON.stringify({mode:"district_discovery",province:province.name,district})});
   discoveryBusinesses=found.businesses||[];renderDiscoveryResults();
   $("discoveryState").textContent=discoveryBusinesses.length?"Kaydediliyor":"Sonuç yok";
   if(discoveryBusinesses.length){
