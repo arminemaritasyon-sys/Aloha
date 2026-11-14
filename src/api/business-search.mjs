@@ -53,9 +53,9 @@ async function discoverDistrict(body, apiKey, res) {
     high: { latitude: Number(viewport.northeast.lat), longitude: Number(viewport.northeast.lng) }
   };
   const queries = [`işletmeler in ${district}, ${province}`, `businesses in ${district}, ${province}`];
-  const byId = new Map(); let pagesChecked = 0;
-  for (const textQuery of queries) {
-    let pageToken = null;
+  const byId = new Map();
+  const queryPages = await Promise.all(queries.map(async textQuery => {
+    const pages = []; let pageToken = null;
     for (let page = 0; page < 3; page++) {
       const response = await googleJson("https://places.googleapis.com/v1/places:searchText", {
         method: "POST",
@@ -65,21 +65,23 @@ async function discoverDistrict(body, apiKey, res) {
         },
         body: JSON.stringify({ textQuery, languageCode:"tr", regionCode:"TR", pageSize:20, rankPreference:"RELEVANCE", locationRestriction:{rectangle}, ...(pageToken?{pageToken}:{}) })
       });
-      pagesChecked++;
-      for (const place of response.places || []) {
-        if (!place.id) continue;
-        const loc=place.location||{};
-        byId.set(place.id,{
-          id:place.id,name:place.displayName?.text||"İsimsiz işletme",address:place.formattedAddress||null,
-          phone:place.nationalPhoneNumber||null,rating:Number.isFinite(place.rating)?place.rating:null,
-          user_rating_count:Number.isFinite(place.userRatingCount)?place.userRatingCount:0,
-          primary_type:place.primaryTypeDisplayName?.text||(place.types||[])[0]||null,types:place.types||[],
-          latitude:Number.isFinite(loc.latitude)?loc.latitude:null,longitude:Number.isFinite(loc.longitude)?loc.longitude:null,
-          maps_url:place.googleMapsUri||null,website:place.websiteUri||null,business_status:place.businessStatus||null
-        });
-      }
+      pages.push(response.places || []);
       pageToken=response.nextPageToken||null;if(!pageToken)break;
     }
+    return pages;
+  }));
+  const pagesChecked = queryPages.reduce((count,pages)=>count+pages.length,0);
+  for (const place of queryPages.flat(2)) {
+    if (!place.id) continue;
+    const loc=place.location||{};
+    byId.set(place.id,{
+      id:place.id,name:place.displayName?.text||"İsimsiz işletme",address:place.formattedAddress||null,
+      phone:place.nationalPhoneNumber||null,rating:Number.isFinite(place.rating)?place.rating:null,
+      user_rating_count:Number.isFinite(place.userRatingCount)?place.userRatingCount:0,
+      primary_type:place.primaryTypeDisplayName?.text||(place.types||[])[0]||null,types:place.types||[],
+      latitude:Number.isFinite(loc.latitude)?loc.latitude:null,longitude:Number.isFinite(loc.longitude)?loc.longitude:null,
+      maps_url:place.googleMapsUri||null,website:place.websiteUri||null,business_status:place.businessStatus||null
+    });
   }
   const businesses=[...byId.values()].sort((a,b)=>a.name.localeCompare(b.name,"tr"));
   if(!process.env.DATABASE_URL)return res.status(503).json({ok:false,error:"database_unavailable",message:"İşletmeleri rehbere kaydetmek için DATABASE_URL gerekli."});
@@ -91,18 +93,24 @@ async function discoverDistrict(body, apiKey, res) {
       data JSONB NOT NULL DEFAULT '{}'::jsonb,due_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
     await sql`CREATE INDEX IF NOT EXISTS aloha_workspace_type_updated_idx ON aloha_workspace_items(type,updated_at DESC)`;
-    for(const business of businesses){
-      const existing=await sql`SELECT id FROM aloha_workspace_items WHERE type='business' AND data->>'google_place_id'=${business.id} LIMIT 1`;
-      if(existing.length){duplicates++;continue;}
-      const id=randomUUID(),data={
-        phone:business.phone,category:business.primary_type||"Google işletmesi",address:business.address,
-        latitude:business.latitude,longitude:business.longitude,source:"Google Places",google_place_id:business.id,
-        rating:business.rating,user_rating_count:business.user_rating_count,business_status:business.business_status,
-        maps_url:business.maps_url,website:business.website,types:business.types,province,district,call_status:"not_started"
-      };
-      await sql`INSERT INTO aloha_workspace_items(id,type,title,status,data) VALUES(${id},'business',${business.name},'open',${JSON.stringify(data)}::jsonb)`;
-      saved++;
-    }
+    const rows=businesses.map(b=>({
+      id:randomUUID(),title:b.name,data:{
+        phone:b.phone,category:b.primary_type||"Google işletmesi",address:b.address,
+        latitude:b.latitude,longitude:b.longitude,source:"Google Places",google_place_id:b.id,
+        rating:b.rating,user_rating_count:b.user_rating_count,business_status:b.business_status,
+        maps_url:b.maps_url,website:b.website,types:b.types,province,district,call_status:"not_started"
+      }
+    }));
+    const inserted=await sql`INSERT INTO aloha_workspace_items(id,type,title,status,data)
+      SELECT item.id,'business',item.title,'open',item.data
+      FROM jsonb_to_recordset(${JSON.stringify(rows)}::jsonb) AS item(id text,title text,data jsonb)
+      WHERE NOT EXISTS (
+        SELECT 1 FROM aloha_workspace_items existing
+        WHERE existing.type='business'
+        AND existing.data->>'google_place_id'=item.data->>'google_place_id'
+      )
+      RETURNING data->>'google_place_id' AS google_place_id`;
+    saved=inserted.length;duplicates=businesses.length-saved;
   }
   return res.status(200).json({ok:true,province,district,resolved_address:result.formatted_address,total:businesses.length,saved,duplicates,pages_checked:pagesChecked,businesses,
     warning:"Google Places sonuçları sektör filtresi olmadan aranmıştır; Google sıralama ve görünürlük nedeniyle ilçedeki tüm işletmeleri eksiksiz döndürmeyi garanti etmez."});
