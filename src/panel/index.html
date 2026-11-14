@@ -648,12 +648,10 @@ $("businessDiscoveryForm")?.addEventListener("submit",async event=>{
   discoveryBusinesses=found.businesses||[];renderDiscoveryResults();
   $("discoveryState").textContent=discoveryBusinesses.length?"Kaydediliyor":"Sonuç yok";
   if(discoveryBusinesses.length){
-   const items=discoveryBusinesses.map(b=>({title:b.name,data:{phone:b.phone,category:b.primary_type||"Google işletmesi",address:b.address,latitude:b.latitude,longitude:b.longitude,source:"Google Places",google_place_id:b.id,rating:b.rating,user_rating_count:b.user_rating_count,open_now:b.open_now,business_status:b.business_status,maps_url:b.maps_url,website:b.website,types:b.types||[],province:province.name,district,call_status:"not_started"}}));
-   const saved=await api("/api/workspace",{method:"POST",body:JSON.stringify({type:"business",items})});
-   $("discoverySaved").textContent=String(saved.saved||0);
+   $("discoverySaved").textContent=String(found.saved||0);
    await loadWorkspace();renderDiscoveryDirectory();
    $("discoveryState").textContent="Tamamlandı";
-   toast((saved.saved||0)+" yeni işletme rehbere kaydedildi · "+(saved.duplicates||0)+" zaten kayıtlı.");
+   toast((found.saved||0)+" yeni işletme rehbere kaydedildi · "+(found.duplicates||0)+" zaten kayıtlı.");
   }else{$("discoveryState").textContent="Sonuç yok";toast("Google bu ilçe için işletme sonucu döndürmedi.");}
  }catch(error){$("discoveryState").textContent="Hata";toast(error.message||"İşletme keşfi başarısız.");}
  finally{button.disabled=false;button.textContent="⌕ Bu ilçedeki işletmeleri getir";}
