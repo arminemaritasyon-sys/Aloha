@@ -44,6 +44,26 @@ export default async function handler(req, res) {
     const type = clean(body.type, 30);
     if (!TYPES.has(type)) return res.status(400).json({ ok: false, error: "invalid_type" });
 
+    if (req.method === "POST" && Array.isArray(body.items)) {
+      if (type !== "business") return res.status(400).json({ ok: false, error: "bulk_business_only" });
+      if (body.items.length > 150) return res.status(400).json({ ok: false, error: "bulk_limit_exceeded" });
+      let saved = 0, duplicates = 0;
+      const savedPlaceIds = [], duplicatePlaceIds = [];
+      for (const entry of body.items) {
+        const title = clean(entry?.title, 180);
+        const data = entry?.data && typeof entry.data === "object" && !Array.isArray(entry.data) ? entry.data : {};
+        const placeId = clean(data.google_place_id, 220);
+        if (!title || !placeId) continue;
+        const existing = await sql`SELECT id FROM aloha_workspace_items WHERE type='business' AND data->>'google_place_id'=${placeId} LIMIT 1`;
+        if (existing.length) { duplicates++; duplicatePlaceIds.push(placeId); continue; }
+        const id = randomUUID();
+        await sql`INSERT INTO aloha_workspace_items (id,type,title,status,data)
+          VALUES (${id},'business',${title},'open',${JSON.stringify(data)}::jsonb)`;
+        saved++; savedPlaceIds.push(placeId);
+      }
+      return res.status(201).json({ ok: true, saved, duplicates, saved_place_ids: savedPlaceIds, duplicate_place_ids: duplicatePlaceIds });
+    }
+
     if (req.method === "POST") {
       const title = clean(body.title, 180);
       if (!title) return res.status(400).json({ ok: false, error: "title_required" });
