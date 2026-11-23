@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { timingSafeEqual, randomUUID } from "node:crypto";
+import { ensureMemorySchema, normalizePhone } from "./_customer-memory.mjs";
 function equal(expected, supplied) { if (!expected || !supplied) return false; const a=Buffer.from(String(expected).trim()), b=Buffer.from(String(supplied||"").trim()); return a.length===b.length && timingSafeEqual(a,b); }
 const panelAuth=req=>equal(process.env.ALOHA_PANEL_KEY,req.headers["x-panel-key"]);
 const agentAuth=req=>{const h=String(req.headers.authorization||"");const bearer=h.match(/^Bearer\s+(.+)$/i)?.[1]||"";return equal(process.env.ALOHA_AGENT_API_KEY,req.headers["x-aloha-agent-key"])||equal(process.env.LIVEKIT_WEBHOOK_SECRET,bearer);};
@@ -37,6 +38,17 @@ export default async function handler(req,res){
    const items=Array.isArray(body.order_items)?JSON.stringify(body.order_items).slice(0,12000):null;
    const price=body.price_total===null||body.price_total===undefined||body.price_total===""?null:Number(body.price_total);
    const [order]=await sql`INSERT INTO aloha_orders (id,order_number,call_job_id,customer_name,phone,product,quantity,address,notes,status,delivery_address,latitude,longitude,business_name,business_phone,business_address,business_osm_id,order_items,price_total,currency,confirmed_at,confirmation_text) VALUES (${id},${orderNumber},${clean(body.call_job_id,160)||null},${customer},${clean(body.phone,50)||null},${product},${quantity},${address},${clean(body.notes,4000)||null},${status},${address},${Number.isFinite(lat)?lat:null},${Number.isFinite(lon)?lon:null},${clean(body.business_name,180)||null},${clean(body.business_phone,60)||null},${clean(body.business_address,500)||null},${clean(body.business_osm_id,100)||null},${items},${Number.isFinite(price)?price:null},${clean(body.currency,8)||null},${isAgent?new Date().toISOString():null},${isAgent?clean(body.confirmation_text,1000)||"Müşteri siparişi açıkça onayladı.":null}) RETURNING *`;
+   if(body.phone){
+    try{
+     await ensureMemorySchema(sql);
+     const phone=normalizePhone(body.phone);
+     if(phone){
+      const [memoryCustomer]=await sql`SELECT id FROM aloha_customers WHERE phone_e164=${phone} AND consent_at IS NOT NULL AND memory_enabled=TRUE LIMIT 1`;
+      if(memoryCustomer) await sql`INSERT INTO aloha_customer_memories(customer_id,call_job_id,summary,intent,order_notes)
+       VALUES(${memoryCustomer.id},${clean(body.call_job_id,180)||null},${"Sipariş kaydı: "+orderNumber+" · "+customer+" · "+product+" · Adet: "+quantity},'Sipariş',${JSON.stringify([{order_number:orderNumber,product,quantity,status}])}::jsonb)`;
+     }
+    }catch(memoryError){console.error("aloha_order_memory_append_error",{message:memoryError?.message||String(memoryError)})}
+   }
    await sql`INSERT INTO aloha_order_status_history(order_id,old_status,new_status,changed_by,note) VALUES (${id},NULL,${status},${isAgent?"aloha-agent":"panel"},${isAgent?"Müşteri onayıyla oluşturuldu":"Panelden manuel oluşturuldu"})`;
    return res.status(201).json({ok:true,order});
   }
