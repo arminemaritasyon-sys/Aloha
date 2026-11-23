@@ -416,7 +416,17 @@ tbody tr:hover{background:#f8f9fb}
 <div class="card-body discovery-fields">
 <label>İl<select id="discoveryProvince" class="input" required><option value="">İller yükleniyor…</option></select></label>
 <label>İlçe<select id="discoveryDistrict" class="input" required disabled><option value="">Önce il seç</option></select></label>
-<div class="discovery-actions"><button class="btn primary" id="discoverySubmit" type="submit">⌕ Bu ilçedeki işletmeleri getir</button><span class="discovery-source">Kaynak: Google Places</span></div>
+<label class="wide">İşletme sektörü<select id="discoveryCategory" class="input" required>
+<option value="">Sektör seçin</option>
+<option value="Dönerci">Dönerci</option><option value="Restoran">Restoran</option><option value="Kafe">Kafe</option>
+<option value="Kuaför">Kuaför</option><option value="Berber">Berber</option><option value="Oto servis">Oto servis</option>
+<option value="Oto yıkama">Oto yıkama</option><option value="Eczane">Eczane</option><option value="Diş kliniği">Diş kliniği</option>
+<option value="Market">Market</option><option value="Pastane">Pastane</option><option value="Güzellik salonu">Güzellik salonu</option>
+<option value="Spor salonu">Spor salonu</option><option value="Pet shop">Pet shop</option><option value="Veteriner">Veteriner</option>
+<option value="Otel">Otel</option><option value="Giyim mağazası">Giyim mağazası</option><option value="Mobilya mağazası">Mobilya mağazası</option>
+<option value="Elektrikçi">Elektrikçi</option><option value="Tesisatçı">Tesisatçı</option><option value="Avukat">Avukat</option>
+</select></label>
+<div class="discovery-actions"><button class="btn primary" id="discoverySubmit" type="submit">⌕ Sektördeki işletmeleri getir</button><span class="discovery-source">Kaynak: Google Places</span></div>
 </div></form>
 <div class="card discovery-status">
 <div class="card-head"><div><h2>Keşif durumu</h2><p>Google sonuçları ve rehber kaydı</p></div><span class="status" id="discoveryState">Hazır</span></div>
@@ -427,10 +437,10 @@ tbody tr:hover{background:#f8f9fb}
 </div>
 </div></div>
 <div class="card discovery-results-card">
-<div class="card-head"><div><h2>Google işletme sonuçları</h2><p id="discoveryCaption">İl ve ilçe seçtikten sonra aramayı başlat.</p></div><button class="btn" id="discoveryClear" type="button">Temizle</button></div>
+<div class="card-head"><div><h2>Google işletme sonuçları</h2><p id="discoveryCaption">İl, ilçe ve sektör seçtikten sonra aramayı başlat.</p></div><button class="btn" id="discoveryClear" type="button">Temizle</button></div>
 <div id="discoveryResults"><div class="discovery-empty">Henüz bölge araması yapılmadı.</div></div>
 </div>
-<div class="discovery-note"><b>Önemli:</b> Sektör filtresi kullanılmaz. Google Places sonuçları kendi sıralama ve görünürlük sistemine göre döndürür; Google API hiçbir bölgede tüm kayıtlı işletmeleri eksiksiz listelemeyi garanti etmez. Bulunan kayıtlar Aloha işletme rehberine otomatik kaydedilir; aynı Google Place ID ikinci kez eklenmez.</div>
+<div class="discovery-note"><b>Önemli:</b> Seçtiğin sektör, ilçe sınırları içinde Google Places üzerinden aranır. Google sonuçları kendi sıralama ve görünürlük sistemine göre döndürür; Google API hiçbir bölgede tüm kayıtlı işletmeleri eksiksiz listelemeyi garanti etmez. Bulunan kayıtlar Aloha işletme rehberine otomatik kaydedilir; aynı Google Place ID ikinci kez eklenmez.</div>
 <div class="card discovery-directory">
 <div class="card-head"><div><h2>Aloha işletme rehberi</h2><p id="discoveryDirectoryCount">Kayıtlar yükleniyor…</p></div><input id="discoveryDirectorySearch" class="input" placeholder="Kayıtlı işletmelerde ara…"></div>
 <div id="discoveryDirectory"><div class="discovery-empty">Kayıtlar yükleniyor…</div></div>
@@ -645,7 +655,7 @@ $("businessDiscoveryForm")?.addEventListener("submit",async event=>{
  const button=$("discoverySubmit");button.disabled=true;button.textContent="Google'dan işletmeler alınıyor…";
  $("discoveryState").textContent="Google aranıyor";$("discoverySaved").textContent="0";discoveryBusinesses=[];renderDiscoveryResults();
  try{
-  const found=await api("/api/business-search",{method:"POST",body:JSON.stringify({mode:"district_discovery",province:province.name,district})});
+  const category=$("discoveryCategory").value;if(!category)return toast("Lütfen işletme sektörü seç.");const found=await api("/api/business-search",{method:"POST",body:JSON.stringify({mode:"district_discovery",province:province.name,district,category})});
   discoveryBusinesses=found.businesses||[];renderDiscoveryResults();
   $("discoveryState").textContent=discoveryBusinesses.length?"Kaydediliyor":"Sonuç yok";
   if(discoveryBusinesses.length){
