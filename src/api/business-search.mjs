@@ -38,22 +38,41 @@ async function googleJson(url, options = {}) {
 async function discoverDistrict(body, apiKey, res) {
   const province = clean(body.province, 80), district = clean(body.district, 100);
   if (!province || !district) return res.status(400).json({ ok: false, error: "province_and_district_required" });
-  const address = `${district}, ${province}, Türkiye`;
-  const geocodeUrl = new URL("https://maps.googleapis.com/maps/api/geocode/json");
-  geocodeUrl.searchParams.set("address", address);
-  geocodeUrl.searchParams.set("region", "tr");
-  geocodeUrl.searchParams.set("language", "tr");
-  geocodeUrl.searchParams.set("key", apiKey);
-  const geo = await googleJson(geocodeUrl);
-  if (geo.status !== "OK" || !geo.results?.length) return res.status(404).json({ ok: false, error: "district_not_found", message: "Google seçilen ilçe için konum bulamadı." });
+  const category = clean(body.category, 100);
+  if (!category) return res.status(400).json({ ok: false, error: "category_required", message: "Aramak istediğiniz işletme sektörünü seçin." });
+  const addressCandidates = [
+    `${district}, ${province}, Türkiye`,
+    `${district} ilçesi, ${province}, Türkiye`,
+    `${province} ${district}, Türkiye`
+  ];
+  let geo = null;
+  for (const candidate of [...new Set(addressCandidates)]) {
+    const geocodeUrl = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+    geocodeUrl.searchParams.set("address", candidate);
+    geocodeUrl.searchParams.set("region", "tr");
+    geocodeUrl.searchParams.set("language", "tr");
+    geocodeUrl.searchParams.set("key", apiKey);
+    const attempt = await googleJson(geocodeUrl);
+    if (attempt.status === "OK" && attempt.results?.length) { geo = attempt; break; }
+    if (attempt.status !== "ZERO_RESULTS") {
+      console.error("aloha_district_geocode_error", { status: attempt.status, error_message: attempt.error_message || null, query: candidate });
+      return res.status(502).json({
+        ok: false, error: "district_geocode_failed", google_status: attempt.status,
+        message: attempt.error_message || `Google konum servisi hata döndürdü (${attempt.status}). Google Maps Geocoding API etkinliğini ve API anahtarı kısıtlamalarını kontrol edin.`
+      });
+    }
+  }
+  if (!geo) return res.status(404).json({
+    ok: false, error: "district_not_found", google_status: "ZERO_RESULTS",
+    tried: addressCandidates,
+    message: `Google "${district}, ${province}" için konum bulamadı. İlçe adını ve ili kontrol edin.`
+  });
   const result = geo.results[0], viewport = result.geometry?.viewport || result.geometry?.bounds;
   if (!viewport?.northeast || !viewport?.southwest) return res.status(502).json({ ok: false, error: "district_bounds_missing", message: "Google ilçe sınır alanını döndürmedi." });
   const rectangle = {
     low: { latitude: Number(viewport.southwest.lat), longitude: Number(viewport.southwest.lng) },
     high: { latitude: Number(viewport.northeast.lat), longitude: Number(viewport.northeast.lng) }
   };
-  const category = clean(body.category, 100);
-  if (!category) return res.status(400).json({ ok: false, error: "category_required", message: "Aramak istediğiniz işletme sektörünü seçin." });
   const queries = [`${category} in ${district}, ${province}`, `${category} ${district} ${province}`];
   const byId = new Map();
   const queryPages = await Promise.all(queries.map(async textQuery => {
