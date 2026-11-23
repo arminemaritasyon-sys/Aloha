@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { appendCallMemory } from "./_customer-memory.mjs";
+import { appendCallMemory } from "../lib/customer-memory.mjs";
 
 function authorized(req) {
   const expected = (process.env.LIVEKIT_WEBHOOK_SECRET || "").trim();

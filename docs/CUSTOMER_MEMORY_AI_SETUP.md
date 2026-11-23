@@ -4,7 +4,7 @@
 
 - Tool name: `lookup_customer_memory`
 - Method: `POST`
-- URL: `https://aloha-kohl.vercel.app/api/customer-memory`
+- URL: `https://aloha-kohl.vercel.app/api/workspace?resource=customer-memory`
 - Header: `Authorization: Bearer {{secrets.ALOHA_WEBHOOK_SECRET}}`
 - Body: `{"action":"lookup","phone":"{{sip.phoneNumber}}"}`
 
@@ -14,7 +14,7 @@ Arama başında arayan numara bilinir bilinmez çağır. Yanıt `personalization
 
 - Tool name: `save_customer_memory`
 - Method: `POST`
-- URL: `https://aloha-kohl.vercel.app/api/customer-memory`
+- URL: `https://aloha-kohl.vercel.app/api/workspace?resource=customer-memory`
 - Header: `Authorization: Bearer {{secrets.ALOHA_WEBHOOK_SECRET}}`
 - Body örneği:
 ```json

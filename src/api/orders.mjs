@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { timingSafeEqual, randomUUID } from "node:crypto";
-import { ensureMemorySchema, normalizePhone } from "./_customer-memory.mjs";
+import { ensureMemorySchema, normalizePhone } from "../lib/customer-memory.mjs";
 function equal(expected, supplied) { if (!expected || !supplied) return false; const a=Buffer.from(String(expected).trim()), b=Buffer.from(String(supplied||"").trim()); return a.length===b.length && timingSafeEqual(a,b); }
 const panelAuth=req=>equal(process.env.ALOHA_PANEL_KEY,req.headers["x-panel-key"]);
 const agentAuth=req=>{const h=String(req.headers.authorization||"");const bearer=h.match(/^Bearer\s+(.+)$/i)?.[1]||"";return equal(process.env.ALOHA_AGENT_API_KEY,req.headers["x-aloha-agent-key"])||equal(process.env.LIVEKIT_WEBHOOK_SECRET,bearer);};
