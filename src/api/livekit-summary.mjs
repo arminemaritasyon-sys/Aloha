@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { appendCallMemory } from "../lib/customer-memory.mjs";
 
 function authorized(req) {
   const expected = (process.env.LIVEKIT_WEBHOOK_SECRET || "").trim();
@@ -187,6 +188,9 @@ export default async function handler(req, res) {
         results = EXCLUDED.results,
         raw_payload = EXCLUDED.raw_payload
     `;
+
+    try { await appendCallMemory(sql, call); }
+    catch (memoryError) { console.error("aloha_customer_memory_append_error", { message: memoryError?.message || String(memoryError) }); }
 
     await recordWebhookHealth("saved", "Anahtar eşleşti ve görüşme kaydı veritabanına yazıldı.");
     console.info("aloha_webhook_saved", { jobId: call.jobId, roomNamePresent: Boolean(call.roomName) });
