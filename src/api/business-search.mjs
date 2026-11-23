@@ -52,7 +52,9 @@ async function discoverDistrict(body, apiKey, res) {
     low: { latitude: Number(viewport.southwest.lat), longitude: Number(viewport.southwest.lng) },
     high: { latitude: Number(viewport.northeast.lat), longitude: Number(viewport.northeast.lng) }
   };
-  const queries = [`işletmeler in ${district}, ${province}`, `businesses in ${district}, ${province}`];
+  const category = clean(body.category, 100);
+  if (!category) return res.status(400).json({ ok: false, error: "category_required", message: "Aramak istediğiniz işletme sektörünü seçin." });
+  const queries = [`${category} in ${district}, ${province}`, `${category} ${district} ${province}`];
   const byId = new Map();
   const queryPages = await Promise.all(queries.map(async textQuery => {
     const pages = []; let pageToken = null;
@@ -112,7 +114,7 @@ async function discoverDistrict(body, apiKey, res) {
       RETURNING data->>'google_place_id' AS google_place_id`;
     saved=inserted.length;duplicates=businesses.length-saved;
   }
-  return res.status(200).json({ok:true,province,district,resolved_address:result.formatted_address,total:businesses.length,saved,duplicates,pages_checked:pagesChecked,businesses,
+  return res.status(200).json({ok:true,province,district,category,resolved_address:result.formatted_address,total:businesses.length,saved,duplicates,pages_checked:pagesChecked,businesses,
     warning:"Google Places sonuçları sektör filtresi olmadan aranmıştır; Google sıralama ve görünürlük nedeniyle ilçedeki tüm işletmeleri eksiksiz döndürmeyi garanti etmez."});
 }
 
@@ -264,7 +266,7 @@ export default async function handler(req, res) {
     return res.status(502).json({
       ok: false,
       error: "google_local_search_failed",
-      message: "Google işletme arama servisine şu anda ulaşılamıyor."
+      message: error?.message ? `Google araması başarısız: ${String(error.message).slice(0, 240)}` : "Google işletme arama servisine şu anda ulaşılamıyor."
     });
   }
 }
