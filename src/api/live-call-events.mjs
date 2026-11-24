@@ -1,5 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { RoomServiceClient } from "livekit-server-sdk";
+import { normalizePhone } from "../lib/customer-memory.mjs";
 
 export const config = { api: { bodyParser: false } };
 
@@ -109,6 +111,20 @@ export default async function handler(req, res) {
     const call = mapEvent(event);
     if (!call) return res.status(200).json({ ok: true, ignored: true, event: event.event || null });
     const sql = neon(process.env.DATABASE_URL);
+    let matchedCustomerName = null;
+    const normalizedCallerPhone = normalizePhone(call.callerPhone);
+    if (normalizedCallerPhone) {
+      try {
+        const [customer] = await sql`SELECT full_name FROM aloha_customers
+          WHERE phone_e164 = ${normalizedCallerPhone}
+            AND consent_at IS NOT NULL AND memory_enabled = TRUE
+          LIMIT 1`;
+        matchedCustomerName = customer?.full_name || null;
+      } catch (lookupError) {
+        console.warn("aloha_live_call_customer_lookup_skipped", { message: lookupError?.message || String(lookupError) });
+      }
+    }
+    if (matchedCustomerName) call.callerName = matchedCustomerName;
     await sql`CREATE TABLE IF NOT EXISTS aloha_live_calls (
       call_id TEXT PRIMARY KEY,
       room_id TEXT,
@@ -154,6 +170,20 @@ export default async function handler(req, res) {
         raw_payload = EXCLUDED.raw_payload,
         updated_at = NOW()
     `;
+    // Make the matched caller available to the agent through LiveKit room metadata.
+    if (matchedCustomerName && call.roomName && process.env.LIVEKIT_URL && process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET) {
+      try {
+        let metadata = {};
+        const rawMetadata = event.room?.metadata;
+        if (typeof rawMetadata === "string" && rawMetadata.trim()) {
+          try { metadata = JSON.parse(rawMetadata); } catch { metadata = {}; }
+        } else if (rawMetadata && typeof rawMetadata === "object") metadata = rawMetadata;
+        const rooms = new RoomServiceClient(process.env.LIVEKIT_URL, process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET);
+        await rooms.updateRoomMetadata(call.roomName, JSON.stringify({ ...metadata, aloha_customer: { name: matchedCustomerName, matched: true } }));
+      } catch (metadataError) {
+        console.warn("aloha_live_call_customer_metadata_failed", { message: metadataError?.message || String(metadataError) });
+      }
+    }
     await sql`CREATE TABLE IF NOT EXISTS aloha_livekit_webhook_health (
       id SMALLINT PRIMARY KEY CHECK (id = 1),
       last_event TEXT NOT NULL,
@@ -162,7 +192,7 @@ export default async function handler(req, res) {
     await sql`INSERT INTO aloha_livekit_webhook_health (id, last_event, last_seen_at)
       VALUES (1, ${String(event.event || "unknown")}, NOW())
       ON CONFLICT (id) DO UPDATE SET last_event = EXCLUDED.last_event, last_seen_at = NOW()`;
-    return res.status(200).json({ ok: true, received: true, event: event.event, status: call.status, call_id: call.callId });
+    return res.status(200).json({ ok: true, received: true, event: event.event, status: call.status, call_id: call.callId, customer_matched: Boolean(matchedCustomerName) });
   } catch (error) {
     console.error("aloha_live_call_webhook_error", { message: error?.message || String(error) });
     return res.status(500).json({ ok: false, error: "live_call_event_save_failed" });
